@@ -1,4 +1,4 @@
-import 'package:chess_opening_trainer/chess_board.dart';
+import 'package:chess_opening_trainer/app.dart';
 import 'package:chess_opening_trainer/models.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -22,16 +22,4 @@ void main() async {
   await Hive.openBox<ChessPosition>('positions');
 
   runApp(const App());
-}
-
-class App extends StatelessWidget {
-  const App({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Squares Example',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const ChessBoard(),
-    );
-  }
 }
