@@ -97,10 +97,14 @@ class _ChessBoardState extends State<ChessBoard> {
                 IconButton(onPressed: _undo, icon: const Icon(Icons.undo)),
                 IconButton(
                   onPressed: () {
+                    final move = game.undo();
+                    final fen = game.fen;
+                    game.makeMove(move!);
                     OpeningRepository.addMove(
-                      game.fen,
-                      game.history.last.meta!.algebraic!,
-                      game.fen,
+                      fromFen: fen,
+                      algebraic: game.history.last.meta!.algebraic!,
+                      formatted: game.history.last.meta!.prettyName!,
+                      toFen: game.fen,
                       isMainLine: true,
                       comment: "Test",
                     );
@@ -134,16 +138,22 @@ class _ChessBoardState extends State<ChessBoard> {
                 ),
               ],
             ),
-            Row(
-              children: [
-                for (var move in possibleMoves)
-                  Text(
-                    "${move.algebraic}  ",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-              ],
-            ),
+            if (possibleMoves.isNotEmpty)
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.red, width: 2),
+                ),
+                child: Row(
+                  children: [
+                    for (var move in possibleMoves)
+                      Text(
+                        "${move.formatted}  ",
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),

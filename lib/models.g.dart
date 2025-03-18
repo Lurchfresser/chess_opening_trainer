@@ -18,7 +18,7 @@ class ChessPositionAdapter extends TypeAdapter<ChessPosition> {
     };
     return ChessPosition(
       fen: fields[0] as String,
-      nextMoves: (fields[1] as Map).cast<String, PositionMove>(),
+      nextMoves: (fields[1] as Map?)?.cast<String, PositionMove>(),
       isInRepertoire: fields[2] as bool,
     );
   }
@@ -59,6 +59,7 @@ class PositionMoveAdapter extends TypeAdapter<PositionMove> {
     return PositionMove(
       algebraic: fields[0] as String,
       resultingFen: fields[1] as String,
+      formatted: fields[6] as String,
       comment: fields[2] as String?,
       isMainLine: fields[3] as bool,
       timesPlayed: fields[4] as int,
@@ -69,9 +70,11 @@ class PositionMoveAdapter extends TypeAdapter<PositionMove> {
   @override
   void write(BinaryWriter writer, PositionMove obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.algebraic)
+      ..writeByte(6)
+      ..write(obj.formatted)
       ..writeByte(1)
       ..write(obj.resultingFen)
       ..writeByte(2)

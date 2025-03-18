@@ -15,8 +15,12 @@ void main() async {
   Hive.registerAdapter(ChessPositionAdapter());
   Hive.registerAdapter(PositionMoveAdapter());
 
+  //clear box for debugging
+  await Hive.deleteBoxFromDisk('positions');
+
   // Open the box
   await Hive.openBox<ChessPosition>('positions');
+
   runApp(const App());
 }
 

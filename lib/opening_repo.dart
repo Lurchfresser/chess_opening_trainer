@@ -24,17 +24,19 @@ class OpeningRepository {
   }
 
   // Add a move to a position
-  static Future<void> addMove(
-    String fromFen,
-    String move,
-    String toFen, {
+  static Future<void> addMove({
+    required String fromFen,
+    required String algebraic,
+    required String formatted,
+    required String toFen,
     bool isMainLine = false,
     String? comment,
   }) async {
     ChessPosition position = getPosition(fromFen);
 
-    position.nextMoves[move] = PositionMove(
-      algebraic: move,
+    position.nextMoves[algebraic] = PositionMove(
+      algebraic: algebraic,
+      formatted: formatted,
       resultingFen: toFen,
       isMainLine: isMainLine,
       comment: comment,

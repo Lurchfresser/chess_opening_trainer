@@ -8,22 +8,28 @@ class ChessPosition extends HiveObject {
   String fen; // The FEN string that uniquely identifies this position
 
   @HiveField(1)
-  Map<String, PositionMove> nextMoves = {}; // Key is the move in algebraic notation
+  Map<String, PositionMove> nextMoves; // Key is the move in algebraic notation
 
   @HiveField(2)
-  bool isInRepertoire = false; // Whether this position is part of user's repertoire
+  bool isInRepertoire;
 
   ChessPosition({
     required this.fen,
-    this.nextMoves = const {},
+    Map<String, PositionMove>? nextMoves, // Make this nullable
     this.isInRepertoire = false,
-  });
+  }) : nextMoves =
+           nextMoves != null
+               ? Map<String, PositionMove>.of(nextMoves)
+               : {}; // Ensure it's modifiable
 }
 
 @HiveType(typeId: 1)
 class PositionMove extends HiveObject {
   @HiveField(0)
   String algebraic; // The move in algebraic notation (e.g., "e4")
+
+  @HiveField(6)
+  String formatted;
 
   @HiveField(1)
   String resultingFen; // FEN after this move is played
@@ -32,17 +38,18 @@ class PositionMove extends HiveObject {
   String? comment; // Optional comment about this move
 
   @HiveField(3)
-  bool isMainLine = false; // Whether this is the main recommendation
+  bool isMainLine;
 
   @HiveField(4)
-  int timesPlayed = 0; // Times the user has played this move
+  int timesPlayed;
 
   @HiveField(5)
-  int timesCorrect = 0; // Times the user played correctly
+  int timesCorrect;
 
   PositionMove({
     required this.algebraic,
     required this.resultingFen,
+    required this.formatted,
     this.comment,
     this.isMainLine = false,
     this.timesPlayed = 0,
