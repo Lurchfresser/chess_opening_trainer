@@ -16,7 +16,7 @@ class _TrainingBoardState extends State<TrainingBoard> {
   late bishop.Game game;
   late SquaresState state;
   int player = squares.Squares.white;
-  bool flipBoard = false;
+  bool fromWhitesPerpective = false;
   var gameAndMOve = OpeningRepository.getRandomMove();
 
   @override
@@ -34,17 +34,17 @@ class _TrainingBoardState extends State<TrainingBoard> {
     if (ss) setState(() {});
   }
 
-  void _flipBoard() => setState(() => flipBoard = !flipBoard);
+  void _flipBoard() =>
+      setState(() => fromWhitesPerpective = !fromWhitesPerpective);
 
   void _onMove(squares.Move move) async {
     bool result = game.makeSquaresMove(move);
     if (result) {
-      flipBoard = !flipBoard;
-
       final bool correct = gameAndMOve.$1.nextMoves.containsKey(
         move.algebraic(),
       );
 
+      ScaffoldMessenger.of(context).clearSnackBars();
       if (correct) {
         gameAndMOve = OpeningRepository.getRandomMove();
         game = GameFromPosition.fromPosition(gameAndMOve.$1);
@@ -68,7 +68,6 @@ class _TrainingBoardState extends State<TrainingBoard> {
   void _undo() {
     if (game.history.length == 1) return;
     game.undo();
-    flipBoard = !flipBoard;
     setState(() {
       player =
           player == squares.Squares.white
@@ -105,7 +104,11 @@ class _TrainingBoardState extends State<TrainingBoard> {
                   padding: const EdgeInsets.all(4.0),
                   child: squares.BoardController(
                     animatePieces: false,
-                    state: flipBoard ? state.board.flipped() : state.board,
+                    state:
+                        ((state.player == squares.Squares.white) ==
+                                fromWhitesPerpective)
+                            ? state.board.flipped()
+                            : state.board,
                     playState: state.state,
                     pieceSet: squares.PieceSet.merida(),
                     theme: squares.BoardTheme.brown,
