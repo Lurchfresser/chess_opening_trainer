@@ -1,5 +1,6 @@
 import 'package:bishop/bishop.dart' as bishop;
 import 'package:chess_opening_trainer/history_widet.dart';
+import 'package:chess_opening_trainer/models.dart';
 import 'package:chess_opening_trainer/opening_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:square_bishop/square_bishop.dart';
@@ -16,10 +17,13 @@ class _TrainingBoardState extends State<TrainingBoard> {
   late SquaresState state;
   int player = squares.Squares.white;
   bool flipBoard = false;
+  var gameAndMOve = OpeningRepository.getRandomMove();
 
   @override
   void initState() {
-    _resetGame(false);
+    game = GameFromPosition.fromPosition(gameAndMOve.$1);
+    player = game.state.turn;
+    state = game.squaresState(player);
     super.initState();
   }
 
@@ -36,13 +40,28 @@ class _TrainingBoardState extends State<TrainingBoard> {
     bool result = game.makeSquaresMove(move);
     if (result) {
       flipBoard = !flipBoard;
-      setState(() {
-        player =
-            player == squares.Squares.white
-                ? squares.Squares.black
-                : squares.Squares.white;
-        state = game.squaresState(player);
-      });
+
+      final bool correct = gameAndMOve.$1.nextMoves.containsKey(
+        move.algebraic(),
+      );
+
+      if (correct) {
+        gameAndMOve = OpeningRepository.getRandomMove();
+        game = GameFromPosition.fromPosition(gameAndMOve.$1);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(backgroundColor: Colors.green, content: Text("Correct!")),
+        );
+      } else {
+        game.undo();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(backgroundColor: Colors.red, content: Text("Incorrect!")),
+        );
+      }
+
+      player = game.state.turn;
+      state = game.squaresState(player);
+
+      setState(() {});
     }
   }
 
@@ -68,7 +87,17 @@ class _TrainingBoardState extends State<TrainingBoard> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                const Text('Current Player: '),
+                Text(
+                  player == squares.Squares.white ? 'White' : 'Black',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
             Flexible(
               child: AspectRatio(
                 aspectRatio: 1,
@@ -92,7 +121,8 @@ class _TrainingBoardState extends State<TrainingBoard> {
               ),
             ),
             Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 OutlinedButton(
                   onPressed: _resetGame,
@@ -123,15 +153,6 @@ class _TrainingBoardState extends State<TrainingBoard> {
               ],
             ),
             HistoryWidget(history: game.history),
-            Row(
-              children: [
-                const Text('Current Player: '),
-                Text(
-                  player == squares.Squares.white ? 'White' : 'Black',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
             if (possibleMoves.isNotEmpty)
               DecoratedBox(
                 decoration: BoxDecoration(

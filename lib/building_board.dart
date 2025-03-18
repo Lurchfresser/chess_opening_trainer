@@ -68,7 +68,17 @@ class _BuildingBoardState extends State<BuildingBoard> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                const Text('Current Player: '),
+                Text(
+                  player == squares.Squares.white ? 'White' : 'Black',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
             Flexible(
               child: AspectRatio(
                 aspectRatio: 1,
@@ -92,7 +102,8 @@ class _BuildingBoardState extends State<BuildingBoard> {
               ),
             ),
             Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 OutlinedButton(
                   onPressed: _resetGame,
@@ -123,15 +134,6 @@ class _BuildingBoardState extends State<BuildingBoard> {
               ],
             ),
             HistoryWidget(history: game.history),
-            Row(
-              children: [
-                const Text('Current Player: '),
-                Text(
-                  player == squares.Squares.white ? 'White' : 'Black',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
             if (possibleMoves.isNotEmpty)
               DecoratedBox(
                 decoration: BoxDecoration(

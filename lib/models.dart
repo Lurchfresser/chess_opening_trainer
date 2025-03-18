@@ -1,3 +1,4 @@
+import 'package:bishop/bishop.dart' as bishop;
 import 'package:hive/hive.dart';
 
 part 'models.g.dart';
@@ -55,4 +56,15 @@ class PositionMove extends HiveObject {
     this.timesPlayed = 0,
     this.timesCorrect = 0,
   });
+}
+
+extension GameFromPosition on bishop.Game {
+  /// Returns a [Game] object from a [ChessPosition].
+  static bishop.Game fromPosition(ChessPosition position) {
+    final game = bishop.Game(
+      variant: bishop.Variant.standard(),
+      fen: position.fen,
+    );
+    return game;
+  }
 }

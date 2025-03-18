@@ -34,6 +34,7 @@ class _HistoryWidgetState extends State<HistoryWidget> {
       controller: _scrollController,
       scrollDirection: Axis.horizontal,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           ...widget.history.map((move) {
             //remove the 0th move
