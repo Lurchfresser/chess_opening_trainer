@@ -8,13 +8,15 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Hive
-  final appDocumentDir = await path_provider.getApplicationDocumentsDirectory();
+  final appDocumentDir = await path_provider.getApplicationSupportDirectory();
   await Hive.initFlutter(appDocumentDir.path);
 
   // Register adapters
   Hive.registerAdapter(ChessPositionAdapter());
   Hive.registerAdapter(PositionMoveAdapter());
   Hive.registerAdapter(GameHistoryAdapter());
+  Hive.registerAdapter(GuessEntryAdapter());
+  Hive.registerAdapter(GuessResultAdapter());
 
   //clear box for debugging
   await Hive.deleteBoxFromDisk('positions');

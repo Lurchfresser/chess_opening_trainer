@@ -20,19 +20,25 @@ class ChessPositionAdapter extends TypeAdapter<ChessPosition> {
       fenWithoutMoveCount: fields[0] as String,
       nextMoves: (fields[1] as Map?)?.cast<String, PositionMove>(),
       gameHistories: (fields[2] as List).cast<GameHistory>(),
+      guessHistory: (fields[3] as List).cast<GuessEntry>(),
+      comment: fields[4] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ChessPosition obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.fenWithoutMoveCount)
       ..writeByte(1)
       ..write(obj.nextMoves)
       ..writeByte(2)
-      ..write(obj.gameHistories);
+      ..write(obj.gameHistories)
+      ..writeByte(3)
+      ..write(obj.guessHistory)
+      ..writeByte(4)
+      ..write(obj.comment);
   }
 
   @override
@@ -60,25 +66,19 @@ class PositionMoveAdapter extends TypeAdapter<PositionMove> {
       algebraic: fields[0] as String,
       formatted: fields[1] as String,
       comment: fields[2] as String?,
-      timesPlayed: fields[3] as int,
-      timesCorrect: fields[4] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, PositionMove obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.algebraic)
       ..writeByte(1)
       ..write(obj.formatted)
       ..writeByte(2)
-      ..write(obj.comment)
-      ..writeByte(3)
-      ..write(obj.timesPlayed)
-      ..writeByte(4)
-      ..write(obj.timesCorrect);
+      ..write(obj.comment);
   }
 
   @override
@@ -125,6 +125,87 @@ class GameHistoryAdapter extends TypeAdapter<GameHistory> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is GameHistoryAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class GuessEntryAdapter extends TypeAdapter<GuessEntry> {
+  @override
+  final int typeId = 3;
+
+  @override
+  GuessEntry read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return GuessEntry(
+      dateTime: fields[0] as DateTime,
+      result: fields[1] as GuessResult,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, GuessEntry obj) {
+    writer
+      ..writeByte(2)
+      ..writeByte(0)
+      ..write(obj.dateTime)
+      ..writeByte(1)
+      ..write(obj.result);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is GuessEntryAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class GuessResultAdapter extends TypeAdapter<GuessResult> {
+  @override
+  final int typeId = 4;
+
+  @override
+  GuessResult read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return GuessResult.correct;
+      case 1:
+        return GuessResult.guessedOtherMove;
+      case 2:
+        return GuessResult.incorrect;
+      default:
+        return GuessResult.correct;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, GuessResult obj) {
+    switch (obj) {
+      case GuessResult.correct:
+        writer.writeByte(0);
+        break;
+      case GuessResult.guessedOtherMove:
+        writer.writeByte(1);
+        break;
+      case GuessResult.incorrect:
+        writer.writeByte(2);
+        break;
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is GuessResultAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

@@ -21,6 +21,7 @@ class OpeningRepository {
     // Create if it doesn't exist
     if (position == null) {
       position = ChessPosition(
+        guessHistory: [],
         fenWithoutMoveCount: key,
         gameHistories: [GameHistory.fromGame(game)],
       );
@@ -89,25 +90,37 @@ class OpeningRepository {
     return (randomPosition, randomMove);
   }
 
-  static void updateMovePlayed({
-    required bool correct,
-    required String startingFen,
-    required String algebraicMove,
-  }) {
-    final position = _positionsBox.get(normalizeFen(startingFen));
-    if (position == null) {
+  static GuessResult updateMovePlayed({required bishop.Game gameAfterMove}) {
+    final move = gameAfterMove.undo();
+    final positionBeforeMove = _positionsBox.get(
+      normalizeFen(gameAfterMove.fen),
+    );
+    gameAfterMove.makeMove(move!);
+
+    if (positionBeforeMove == null) {
       throw Exception('Position not found');
     }
 
-    final move = position.nextMoves[algebraicMove];
-    if (move == null) {
-      throw Exception('Move not found');
-    }
+    final positionMove =
+        positionBeforeMove.nextMoves[gameAfterMove
+            .history
+            .last
+            .meta!
+            .algebraic];
 
-    move.timesPlayed++;
-    if (correct) {
-      move.timesCorrect++;
+    //TODO: implement logic for guessed other move
+    final GuessEntry entry;
+    if (positionMove == null) {
+      entry = GuessEntry(
+        dateTime: DateTime.now(),
+        result: GuessResult.incorrect,
+      );
+    } else {
+      entry = GuessEntry(dateTime: DateTime.now(), result: GuessResult.correct);
     }
-    position.save();
+    positionBeforeMove.guessHistory.add(entry);
+    positionBeforeMove.save();
+
+    return entry.result;
   }
 }

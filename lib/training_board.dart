@@ -45,39 +45,45 @@ class _TrainingBoardState extends State<TrainingBoard> {
 
   void _onMove(squares.Move move) async {
     bool result = game.makeSquaresMove(move);
+    if (!result) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text("Invalid move!"),
+        ),
+      );
+      return;
+    }
+    OpeningRepository.updateMovePlayed(gameAfterMove: game);
     state = game.squaresState(player);
     setState(() {});
 
-    if (result) {
-      final bool correct = gameAndMOve.$1.nextMoves.containsKey(
-        move.algebraic(),
+    final bool correct = gameAndMOve.$1.nextMoves.containsKey(move.algebraic());
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    await Future.delayed(animationDuration);
+
+    if (correct) {
+      setState(_loadRandomPosition);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(backgroundColor: Colors.green, content: Text("Correct!")),
       );
-
-      ScaffoldMessenger.of(context).clearSnackBars();
-
-      await Future.delayed(animationDuration);
-
-      if (correct) {
-        setState(_loadRandomPosition);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(backgroundColor: Colors.green, content: Text("Correct!")),
-        );
-      } else {
-        await Future.delayed(Duration(milliseconds: 150));
-        game.undo();
-        player = game.state.turn;
-        state = game.squaresState(player);
-        setState(() {});
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(backgroundColor: Colors.red, content: Text("Incorrect!")),
-        );
-      }
-
+    } else {
+      await Future.delayed(Duration(milliseconds: 150));
+      game.undo();
       player = game.state.turn;
       state = game.squaresState(player);
-
       setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(backgroundColor: Colors.red, content: Text("Incorrect!")),
+      );
     }
+
+    player = game.state.turn;
+    state = game.squaresState(player);
+
+    setState(() {});
   }
 
   void _undo() {
@@ -164,22 +170,22 @@ class _TrainingBoardState extends State<TrainingBoard> {
               ],
             ),
             HistoryWidget(history: game.history),
-            if (possibleMoves.isNotEmpty)
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.red, width: 2),
-                ),
-                child: Row(
-                  children: [
-                    for (var move in possibleMoves)
-                      Text(
-                        "${move.formatted}  ",
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                  ],
-                ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.red, width: 2),
               ),
+              child: Row(
+                children: [
+                  SizedBox(height: 30),
+                  for (var move in possibleMoves)
+                    Text(
+                      "${move.formatted}  ",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

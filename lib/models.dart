@@ -9,15 +9,24 @@ class ChessPosition extends HiveObject {
   String fenWithoutMoveCount; // The FEN string that uniquely identifies this position
 
   @HiveField(1)
-  Map<String, PositionMove> nextMoves; // Key is the move in algebraic notation
+  /// Map of possible moves from this position, the key is the move in algebraic notation
+  Map<String, PositionMove> nextMoves;
 
   @HiveField(2)
   List<GameHistory> gameHistories; // List of game histories for this position
+
+  @HiveField(3)
+  List<GuessEntry> guessHistory;
+
+  @HiveField(4)
+  String? comment;
 
   ChessPosition({
     required this.fenWithoutMoveCount,
     Map<String, PositionMove>? nextMoves, // Make this nullable
     required this.gameHistories,
+    required this.guessHistory,
+    this.comment,
   }) : nextMoves =
            nextMoves != null
                ? Map<String, PositionMove>.of(nextMoves)
@@ -37,18 +46,10 @@ class PositionMove extends HiveObject {
   @HiveField(2)
   String? comment; // Optional comment about this move
 
-  @HiveField(3)
-  int timesPlayed;
-
-  @HiveField(4)
-  int timesCorrect;
-
   PositionMove({
     required this.algebraic,
     required this.formatted,
     this.comment,
-    this.timesPlayed = 0,
-    this.timesCorrect = 0,
   });
 }
 
@@ -76,6 +77,27 @@ class GameHistory extends HiveObject {
     }
     return GameHistory(pgn: pgn, moves: moves);
   }
+}
+
+@HiveType(typeId: 3)
+class GuessEntry extends HiveObject {
+  @HiveField(0)
+  final DateTime dateTime;
+
+  @HiveField(1)
+  final GuessResult result;
+
+  GuessEntry({required this.dateTime, required this.result});
+}
+
+@HiveType(typeId: 4)
+enum GuessResult {
+  @HiveField(0)
+  correct,
+  @HiveField(1)
+  guessedOtherMove,
+  @HiveField(2)
+  incorrect,
 }
 
 extension GameFromPosition on bishop.Game {
