@@ -1,5 +1,6 @@
 import 'package:chess_opening_trainer/building_board.dart';
 import 'package:chess_opening_trainer/training_board.dart';
+import 'package:chess_opening_trainer/training_session_dialog.dart';
 import 'package:flutter/material.dart';
 
 class App extends StatefulWidget {
@@ -10,8 +11,7 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  int index = 0;
-  final List<Widget> pages = [const BuildingBoard(), const TrainingBoard()];
+  Widget currentPage = const BuildingBoard();
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,7 @@ class _AppState extends State<App> {
                     onTap: () {
                       Navigator.pop(context);
                       setState(() {
-                        index = 0;
+                        currentPage = const BuildingBoard();
                       });
                       // Add navigation to building screen
                     },
@@ -47,10 +47,17 @@ class _AppState extends State<App> {
                   ListTile(
                     leading: const Icon(Icons.school),
                     title: const Text('Train Openings'),
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(context);
+                      final numberOfPositions = await showDialog<int?>(
+                        context: context,
+                        builder: (context) => const TrainingSessionDialog(),
+                      );
+                      if (numberOfPositions == null) return;
                       setState(() {
-                        index = 1;
+                        currentPage = TrainingBoard(
+                          numberOfPositions: numberOfPositions,
+                        );
                       });
                       // Add navigation to training screen
                     },
@@ -60,7 +67,7 @@ class _AppState extends State<App> {
             );
           },
         ),
-        body: pages[index],
+        body: currentPage,
       ),
     );
   }

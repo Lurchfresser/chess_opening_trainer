@@ -7,7 +7,9 @@ import 'package:square_bishop/square_bishop.dart';
 import 'package:squares/squares.dart' as squares;
 
 class TrainingBoard extends StatefulWidget {
-  const TrainingBoard({super.key});
+  const TrainingBoard({super.key, required this.numberOfPositions});
+
+  final int numberOfPositions;
   @override
   State<TrainingBoard> createState() => _TrainingBoardState();
 }
@@ -17,35 +19,45 @@ class _TrainingBoardState extends State<TrainingBoard> {
   late SquaresState state;
   int player = squares.Squares.white;
   bool fromWhitesPerpective = false;
-  late var gameAndMOve = OpeningRepository.getRandomMove(
-    forWhite: fromWhitesPerpective,
-  );
+  late ChessPosition chessPosition;
   final Duration animationDuration = const Duration(milliseconds: 250);
+  late List<ChessPosition> positions;
 
   @override
   void initState() {
     //TODO: what if no position available
-    _loadRandomPosition();
+    positions = OpeningRepository.getMostDuePositions(
+      numberOfPositions: widget.numberOfPositions,
+      forWhite: fromWhitesPerpective,
+    );
+    _loadNextPosition();
     super.initState();
   }
 
-  void _loadRandomPosition() {
-    gameAndMOve = OpeningRepository.getRandomMove(
-      forWhite: fromWhitesPerpective,
-    );
-    game = GameFromPosition.fromPosition(gameAndMOve.$1);
+  void _loadNextPosition() {
+    if (positions.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text("No more positions available!"),
+        ),
+      );
+      return;
+    }
+    chessPosition = positions.first;
+    game = GameFromPosition.fromPosition(chessPosition);
     player = game.state.turn;
     state = game.squaresState(player);
   }
 
   void _flipBoard() => setState(() {
     fromWhitesPerpective = !fromWhitesPerpective;
-    setState(_loadRandomPosition);
+    setState(_loadNextPosition);
   });
 
   void _onMove(squares.Move move) async {
-    bool result = game.makeSquaresMove(move);
-    if (!result) {
+    bool moveResult = game.makeSquaresMove(move);
+    if (!moveResult) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           backgroundColor: Colors.red,
@@ -54,18 +66,19 @@ class _TrainingBoardState extends State<TrainingBoard> {
       );
       return;
     }
-    OpeningRepository.updateMovePlayed(gameAfterMove: game);
+    final guessResult = OpeningRepository.updateMovePlayed(gameAfterMove: game);
     state = game.squaresState(player);
     setState(() {});
 
-    final bool correct = gameAndMOve.$1.nextMoves.containsKey(move.algebraic());
+    final bool correct = guessResult != GuessResult.incorrect;
 
     ScaffoldMessenger.of(context).clearSnackBars();
 
     await Future.delayed(animationDuration);
 
     if (correct) {
-      setState(_loadRandomPosition);
+      positions.removeAt(0);
+      setState(_loadNextPosition);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(backgroundColor: Colors.green, content: Text("Correct!")),
       );
@@ -87,6 +100,12 @@ class _TrainingBoardState extends State<TrainingBoard> {
   }
 
   void _undo() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        backgroundColor: Colors.red,
+        content: Text("Debug feature!"),
+      ),
+    );
     if (game.history.length == 1) return;
     game.undo();
     setState(() {
@@ -114,6 +133,15 @@ class _TrainingBoardState extends State<TrainingBoard> {
                 const Text('Current Player: '),
                 Text(
                   player == squares.Squares.white ? 'White' : 'Black',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('NUmber of positions remaining: '),
+                Text(
+                  positions.length.toString(),
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
@@ -157,14 +185,7 @@ class _TrainingBoardState extends State<TrainingBoard> {
                 ),
                 IconButton(onPressed: _undo, icon: const Icon(Icons.undo)),
                 IconButton(
-                  onPressed: () {
-                    if (game.history.length == 1) return;
-                    OpeningRepository.addLastMove(game: game, comment: "Test");
-                  },
-                  icon: const Icon(Icons.save),
-                ),
-                IconButton(
-                  onPressed: () => setState(_loadRandomPosition),
+                  onPressed: () => setState(_loadNextPosition),
                   icon: const Icon(Icons.refresh),
                 ),
               ],

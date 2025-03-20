@@ -4,10 +4,18 @@ import 'package:bishop/bishop.dart' as bishop;
 import 'package:chess_opening_trainer/models.dart';
 import 'package:hive/hive.dart';
 
+const dueDuration = Duration(seconds: 20);
+
 class OpeningRepository {
   static final Box<ChessPosition> _positionsBox = Hive.box<ChessPosition>(
     'positions',
   );
+
+  static numberOfPositionsFor({required bool forWhite}) {
+    return _positionsBox.values
+        .where((position) => position.isWhiteToMove == forWhite)
+        .length;
+  }
 
   // Get a position by FEN, create if it doesn't exist
   static ChessPosition getOrCreatePosition(bishop.Game game) {
@@ -68,7 +76,7 @@ class OpeningRepository {
     return fen.split(' ').take(4).join(' ');
   }
 
-  static (ChessPosition, PositionMove) getRandomMove({required bool forWhite}) {
+  static ChessPosition getRandomPosition({required bool forWhite}) {
     final positions =
         _positionsBox.values.where((position) {
           // Filter positions based on the color to move
@@ -85,9 +93,7 @@ class OpeningRepository {
     if (moves.isEmpty) {
       throw Exception('No moves available for this position');
     }
-    final randomMove = moves[math.Random().nextInt(moves.length)];
-
-    return (randomPosition, randomMove);
+    return randomPosition;
   }
 
   static GuessResult updateMovePlayed({required bishop.Game gameAfterMove}) {
@@ -123,4 +129,33 @@ class OpeningRepository {
 
     return entry.result;
   }
+
+  static List<ChessPosition> getMostDuePositions({
+    required int numberOfPositions,
+    required bool forWhite,
+  }) {
+    final positions =
+        _positionsBox.values
+            .where((position) => position.isWhiteToMove == forWhite)
+            .toList();
+
+    // Sort positions by the number of guesses
+    positions.sort((a, b) {
+      final aDuePoints = _duePoints(a.guessHistory);
+      final bDuePoints = _duePoints(b.guessHistory);
+      return aDuePoints.compareTo(bDuePoints);
+    });
+
+    // Return the most due positions
+    return positions.take(numberOfPositions).toList()..shuffle();
+  }
+}
+
+int _duePoints(List<GuessEntry> guessHistory) {
+  return guessHistory.take(3).fold(0, (sum, entry) {
+    final timePoints =
+        entry.dateTime.isBefore(DateTime.now().subtract(dueDuration)) ? 1 : 0;
+    final guessPoints = entry.result == GuessResult.correct ? 0 : 2;
+    return sum + timePoints + guessPoints;
+  });
 }
