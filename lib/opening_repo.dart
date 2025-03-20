@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:bishop/bishop.dart' as bishop;
 import 'package:chess_opening_trainer/models.dart';
 import 'package:hive/hive.dart';
 
@@ -9,38 +10,45 @@ class OpeningRepository {
   );
 
   // Get a position by FEN, create if it doesn't exist
-  static ChessPosition getOrCreatePosition(String fen) {
+  static ChessPosition getOrCreatePosition(bishop.Game game) {
+    final move = game.undo();
     // Create a normalized key from the FEN string (remove unnecessary parts)
-    String key = normalizeFen(fen);
+    String key = normalizeFen(game.fen);
 
     // Try to find existing position
     ChessPosition? position = _positionsBox.get(key);
 
     // Create if it doesn't exist
     if (position == null) {
-      position = ChessPosition(fen: key);
+      position = ChessPosition(
+        fenWithoutMoveCount: key,
+        gameHistories: [GameHistory.fromGame(game)],
+      );
       _positionsBox.put(key, position);
+    } else {
+      // Update the game history if it already exists
+      position.gameHistories.add(GameHistory.fromGame(game));
     }
+
+    game.makeMove(move!);
 
     return position;
   }
 
   // Add a move to a position
-  static Future<void> addMove({
-    required String fromFen,
-    required String algebraic,
-    required String formatted,
-    required String toFen,
-    bool isMainLine = false,
+  static Future<void> addLastMove({
+    required bishop.Game game,
+
     String? comment,
   }) async {
-    ChessPosition position = getOrCreatePosition(fromFen);
+    ChessPosition position = getOrCreatePosition(game);
+
+    final algebraic = game.history.last.meta!.algebraic!;
+    final formatted = game.history.last.meta!.prettyName!;
 
     position.nextMoves[algebraic] = PositionMove(
       algebraic: algebraic,
       formatted: formatted,
-      resultingFen: toFen,
-      isMainLine: isMainLine,
       comment: comment,
     );
 
@@ -59,8 +67,14 @@ class OpeningRepository {
     return fen.split(' ').take(4).join(' ');
   }
 
-  static (ChessPosition, PositionMove) getRandomMove() {
-    final positions = _positionsBox.values.toList();
+  static (ChessPosition, PositionMove) getRandomMove({required bool forWhite}) {
+    final positions =
+        _positionsBox.values.where((position) {
+          // Filter positions based on the color to move
+          return (forWhite &&
+                  position.fenWithoutMoveCount.split(' ')[1] == 'w') ||
+              (!forWhite && position.fenWithoutMoveCount.split(' ')[1] == 'b');
+        }).toList();
     if (positions.isEmpty) {
       throw Exception('No positions available');
     }

@@ -85,6 +85,7 @@ class _BuildingBoardState extends State<BuildingBoard> {
                 child: Padding(
                   padding: const EdgeInsets.all(4.0),
                   child: squares.BoardController(
+                    key: const Key("BuildingBoard"),
                     animatePieces: false,
                     state: flipBoard ? state.board.flipped() : state.board,
                     playState: state.state,
@@ -106,6 +107,7 @@ class _BuildingBoardState extends State<BuildingBoard> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 OutlinedButton(
+                  //TODO: broken
                   onPressed: _resetGame,
                   child: const Text('New Game'),
                 ),
@@ -117,17 +119,7 @@ class _BuildingBoardState extends State<BuildingBoard> {
                 IconButton(
                   onPressed: () {
                     if (game.history.length == 1) return;
-                    final move = game.undo();
-                    final fen = game.fen;
-                    game.makeMove(move!);
-                    OpeningRepository.addMove(
-                      fromFen: fen,
-                      algebraic: game.history.last.meta!.algebraic!,
-                      formatted: game.history.last.meta!.prettyName!,
-                      toFen: game.fen,
-                      isMainLine: true,
-                      comment: "Test",
-                    );
+                    OpeningRepository.addLastMove(game: game, comment: "Test");
                   },
                   icon: const Icon(Icons.save),
                 ),

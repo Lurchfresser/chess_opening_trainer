@@ -14,6 +14,7 @@ void main() async {
   // Register adapters
   Hive.registerAdapter(ChessPositionAdapter());
   Hive.registerAdapter(PositionMoveAdapter());
+  Hive.registerAdapter(GameHistoryAdapter());
 
   //clear box for debugging
   await Hive.deleteBoxFromDisk('positions');

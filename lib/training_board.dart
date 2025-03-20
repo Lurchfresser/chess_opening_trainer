@@ -17,42 +17,57 @@ class _TrainingBoardState extends State<TrainingBoard> {
   late SquaresState state;
   int player = squares.Squares.white;
   bool fromWhitesPerpective = false;
-  var gameAndMOve = OpeningRepository.getRandomMove();
+  late var gameAndMOve = OpeningRepository.getRandomMove(
+    forWhite: fromWhitesPerpective,
+  );
+  final Duration animationDuration = const Duration(milliseconds: 250);
 
   @override
   void initState() {
-    game = GameFromPosition.fromPosition(gameAndMOve.$1);
-    player = game.state.turn;
-    state = game.squaresState(player);
+    //TODO: what if no position available
+    _loadRandomPosition();
     super.initState();
   }
 
-  void _resetGame([bool ss = true]) {
-    game = bishop.Game(variant: bishop.Variant.standard());
+  void _loadRandomPosition() {
+    gameAndMOve = OpeningRepository.getRandomMove(
+      forWhite: fromWhitesPerpective,
+    );
+    game = GameFromPosition.fromPosition(gameAndMOve.$1);
+    player = game.state.turn;
     state = game.squaresState(player);
-    player = squares.Squares.white;
-    if (ss) setState(() {});
   }
 
-  void _flipBoard() =>
-      setState(() => fromWhitesPerpective = !fromWhitesPerpective);
+  void _flipBoard() => setState(() {
+    fromWhitesPerpective = !fromWhitesPerpective;
+    setState(_loadRandomPosition);
+  });
 
   void _onMove(squares.Move move) async {
     bool result = game.makeSquaresMove(move);
+    state = game.squaresState(player);
+    setState(() {});
+
     if (result) {
       final bool correct = gameAndMOve.$1.nextMoves.containsKey(
         move.algebraic(),
       );
 
       ScaffoldMessenger.of(context).clearSnackBars();
+
+      await Future.delayed(animationDuration);
+
       if (correct) {
-        gameAndMOve = OpeningRepository.getRandomMove();
-        game = GameFromPosition.fromPosition(gameAndMOve.$1);
+        setState(_loadRandomPosition);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(backgroundColor: Colors.green, content: Text("Correct!")),
         );
       } else {
+        await Future.delayed(Duration(milliseconds: 150));
         game.undo();
+        player = game.state.turn;
+        state = game.squaresState(player);
+        setState(() {});
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(backgroundColor: Colors.red, content: Text("Incorrect!")),
         );
@@ -103,12 +118,15 @@ class _TrainingBoardState extends State<TrainingBoard> {
                 child: Padding(
                   padding: const EdgeInsets.all(4.0),
                   child: squares.BoardController(
-                    animatePieces: false,
+                    key: const Key("TrainingBoard"),
+                    animationDuration: animationDuration,
+                    animationCurve: Curves.linear,
+                    animatePieces: true,
                     state:
                         ((state.player == squares.Squares.white) ==
                                 fromWhitesPerpective)
-                            ? state.board.flipped()
-                            : state.board,
+                            ? state.board
+                            : state.board.flipped(),
                     playState: state.state,
                     pieceSet: squares.PieceSet.merida(),
                     theme: squares.BoardTheme.brown,
@@ -127,10 +145,6 @@ class _TrainingBoardState extends State<TrainingBoard> {
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                OutlinedButton(
-                  onPressed: _resetGame,
-                  child: const Text('New Game'),
-                ),
                 IconButton(
                   onPressed: _flipBoard,
                   icon: const Icon(Icons.rotate_left),
@@ -139,19 +153,13 @@ class _TrainingBoardState extends State<TrainingBoard> {
                 IconButton(
                   onPressed: () {
                     if (game.history.length == 1) return;
-                    final move = game.undo();
-                    final fen = game.fen;
-                    game.makeMove(move!);
-                    OpeningRepository.addMove(
-                      fromFen: fen,
-                      algebraic: game.history.last.meta!.algebraic!,
-                      formatted: game.history.last.meta!.prettyName!,
-                      toFen: game.fen,
-                      isMainLine: true,
-                      comment: "Test",
-                    );
+                    OpeningRepository.addLastMove(game: game, comment: "Test");
                   },
                   icon: const Icon(Icons.save),
+                ),
+                IconButton(
+                  onPressed: () => setState(_loadRandomPosition),
+                  icon: const Icon(Icons.refresh),
                 ),
               ],
             ),
