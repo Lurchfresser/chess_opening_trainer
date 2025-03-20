@@ -1,6 +1,7 @@
 import 'package:chess_opening_trainer/app.dart';
 import 'package:chess_opening_trainer/models.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 
@@ -24,5 +25,5 @@ void main() async {
   // Open the box
   await Hive.openBox<ChessPosition>('positions');
 
-  runApp(const App());
+  runApp(ProviderScope(child: const App()));
 }
