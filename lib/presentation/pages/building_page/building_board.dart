@@ -1,6 +1,6 @@
 import 'package:bishop/bishop.dart' as bishop;
-import 'package:chess_opening_trainer/history_widet.dart';
-import 'package:chess_opening_trainer/opening_repo.dart';
+import 'package:chess_opening_trainer/infrastructure/datasources/opening_repo.dart';
+import 'package:chess_opening_trainer/presentation/widgets/history_widet.dart';
 import 'package:flutter/material.dart';
 import 'package:square_bishop/square_bishop.dart';
 import 'package:squares/squares.dart' as squares;

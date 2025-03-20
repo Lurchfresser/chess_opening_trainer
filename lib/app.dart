@@ -1,6 +1,6 @@
-import 'package:chess_opening_trainer/building_board.dart';
-import 'package:chess_opening_trainer/training_board.dart';
-import 'package:chess_opening_trainer/training_session_dialog.dart';
+import 'package:chess_opening_trainer/presentation/pages/building_page/building_board.dart';
+import 'package:chess_opening_trainer/presentation/pages/training_page/training_board.dart';
+import 'package:chess_opening_trainer/presentation/widgets/training_session_dialog.dart';
 import 'package:flutter/material.dart';
 
 class App extends StatefulWidget {

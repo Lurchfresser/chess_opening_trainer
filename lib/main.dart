@@ -1,5 +1,5 @@
 import 'package:chess_opening_trainer/app.dart';
-import 'package:chess_opening_trainer/models.dart';
+import 'package:chess_opening_trainer/infrastructure/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/adapters.dart';

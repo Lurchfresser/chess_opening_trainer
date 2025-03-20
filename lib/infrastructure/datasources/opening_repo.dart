@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:bishop/bishop.dart' as bishop;
-import 'package:chess_opening_trainer/models.dart';
+import 'package:chess_opening_trainer/infrastructure/models/models.dart';
 import 'package:hive/hive.dart';
 
 const dueDuration = Duration(seconds: 20);
