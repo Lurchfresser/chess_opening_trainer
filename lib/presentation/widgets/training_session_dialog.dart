@@ -9,6 +9,7 @@ class TrainingSessionDialog extends StatefulWidget {
 
 class _TrainingSessionDialogState extends State<TrainingSessionDialog> {
   final TextEditingController _controller = TextEditingController();
+  bool forWhite = true;
 
   @override
   void dispose() {
@@ -33,6 +34,14 @@ class _TrainingSessionDialogState extends State<TrainingSessionDialog> {
               hintText: 'Enter number of positions',
             ),
           ),
+          const Text("play for white"),
+          Switch(
+            value: forWhite,
+            onChanged:
+                (_) => setState(() {
+                  forWhite = !forWhite;
+                }),
+          ),
         ],
       ),
       actions: <Widget>[
@@ -52,7 +61,7 @@ class _TrainingSessionDialogState extends State<TrainingSessionDialog> {
               return;
             }
             // Start a new training session
-            Navigator.of(context).pop(numberOfPositions);
+            Navigator.of(context).pop((numberOfPositions, forWhite));
           },
           child: const Text('Start'),
         ),

@@ -1,4 +1,5 @@
 import 'package:chess_opening_trainer/app.dart';
+import 'package:chess_opening_trainer/dependencies.dart';
 import 'package:chess_opening_trainer/infrastructure/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,12 +13,7 @@ void main() async {
   final appDocumentDir = await path_provider.getApplicationSupportDirectory();
   await Hive.initFlutter(appDocumentDir.path);
 
-  // Register adapters
-  Hive.registerAdapter(ChessPositionAdapter());
-  Hive.registerAdapter(PositionMoveAdapter());
-  Hive.registerAdapter(GameHistoryAdapter());
-  Hive.registerAdapter(GuessEntryAdapter());
-  Hive.registerAdapter(GuessResultAdapter());
+  await initDependencies();
 
   //clear box for debugging
   await Hive.deleteBoxFromDisk('positions');

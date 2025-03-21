@@ -1,16 +1,18 @@
+import 'package:chess_opening_trainer/domain/training_session_notifier.dart';
 import 'package:chess_opening_trainer/presentation/pages/building_page/building_board.dart';
 import 'package:chess_opening_trainer/presentation/pages/training_page/training_board.dart';
 import 'package:chess_opening_trainer/presentation/widgets/training_session_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class App extends StatefulWidget {
+class App extends ConsumerStatefulWidget {
   const App({super.key});
 
   @override
-  State<App> createState() => _AppState();
+  ConsumerState<App> createState() => _AppConsumerState();
 }
 
-class _AppState extends State<App> {
+class _AppConsumerState extends ConsumerState<App> {
   Widget currentPage = const BuildingBoard();
 
   @override
@@ -49,15 +51,19 @@ class _AppState extends State<App> {
                     title: const Text('Train Openings'),
                     onTap: () async {
                       Navigator.pop(context);
-                      final numberOfPositions = await showDialog<int?>(
+                      final numberOfPositions = await showDialog<(int, bool)?>(
                         context: context,
                         builder: (context) => const TrainingSessionDialog(),
                       );
                       if (numberOfPositions == null) return;
+                      ref
+                          .read(trainingSessionNotifierProvider.notifier)
+                          .startSession(
+                            forWhite: numberOfPositions.$2,
+                            numberOfPositions: numberOfPositions.$1,
+                          );
                       setState(() {
-                        currentPage = TrainingBoard(
-                          numberOfPositions: numberOfPositions,
-                        );
+                        currentPage = TrainingBoard();
                       });
                       // Add navigation to training screen
                     },

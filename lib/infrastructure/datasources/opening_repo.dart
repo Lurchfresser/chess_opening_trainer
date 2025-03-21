@@ -7,18 +7,16 @@ import 'package:hive/hive.dart';
 const dueDuration = Duration(seconds: 20);
 
 class OpeningRepository {
-  static final Box<ChessPosition> _positionsBox = Hive.box<ChessPosition>(
-    'positions',
-  );
+  final Box<ChessPosition> _positionsBox = Hive.box<ChessPosition>('positions');
 
-  static numberOfPositionsFor({required bool forWhite}) {
+  numberOfPositionsFor({required bool forWhite}) {
     return _positionsBox.values
         .where((position) => position.isWhiteToMove == forWhite)
         .length;
   }
 
   // Get a position by FEN, create if it doesn't exist
-  static ChessPosition getOrCreatePosition(bishop.Game game) {
+  ChessPosition getOrCreatePosition(bishop.Game game) {
     final move = game.undo();
     // Create a normalized key from the FEN string (remove unnecessary parts)
     String key = normalizeFen(game.fen);
@@ -45,11 +43,7 @@ class OpeningRepository {
   }
 
   // Add a move to a position
-  static Future<void> addLastMove({
-    required bishop.Game game,
-
-    String? comment,
-  }) async {
+  Future<void> addLastMove({required bishop.Game game, String? comment}) async {
     ChessPosition position = getOrCreatePosition(game);
 
     final algebraic = game.history.last.meta!.algebraic!;
@@ -65,18 +59,18 @@ class OpeningRepository {
   }
 
   // Get all recommended moves from a position
-  static List<PositionMove> getRecommendedMoves(String fen) {
+  List<PositionMove> getRecommendedMoves(String fen) {
     final position = _positionsBox.get(normalizeFen(fen));
     return position?.nextMoves.values.toList() ?? [];
   }
 
   // Helper function to normalize FEN string (removing move counters if needed)
-  static String normalizeFen(String fen) {
+  String normalizeFen(String fen) {
     // Just use the position part of the FEN
     return fen.split(' ').take(4).join(' ');
   }
 
-  static ChessPosition getRandomPosition({required bool forWhite}) {
+  ChessPosition getRandomPosition({required bool forWhite}) {
     final positions =
         _positionsBox.values.where((position) {
           // Filter positions based on the color to move
@@ -96,7 +90,7 @@ class OpeningRepository {
     return randomPosition;
   }
 
-  static GuessResult updateMovePlayed({required bishop.Game gameAfterMove}) {
+  GuessResult updateMovePlayed({required bishop.Game gameAfterMove}) {
     final move = gameAfterMove.undo();
     final positionBeforeMove = _positionsBox.get(
       normalizeFen(gameAfterMove.fen),
@@ -130,7 +124,7 @@ class OpeningRepository {
     return entry.result;
   }
 
-  static List<ChessPosition> getMostDuePositions({
+  List<ChessPosition> getMostDuePositions({
     required int numberOfPositions,
     required bool forWhite,
   }) {

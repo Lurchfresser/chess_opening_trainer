@@ -1,17 +1,18 @@
 import 'package:bishop/bishop.dart' as bishop;
-import 'package:chess_opening_trainer/infrastructure/datasources/opening_repo.dart';
+import 'package:chess_opening_trainer/domain/building_notifier.dart';
 import 'package:chess_opening_trainer/presentation/widgets/history_widet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:square_bishop/square_bishop.dart';
 import 'package:squares/squares.dart' as squares;
 
-class BuildingBoard extends StatefulWidget {
+class BuildingBoard extends ConsumerStatefulWidget {
   const BuildingBoard({super.key});
   @override
-  State<BuildingBoard> createState() => _BuildingBoardState();
+  ConsumerState<BuildingBoard> createState() => _BuildingBoardConsumerState();
 }
 
-class _BuildingBoardState extends State<BuildingBoard> {
+class _BuildingBoardConsumerState extends ConsumerState<BuildingBoard> {
   late bishop.Game game;
   late SquaresState state;
   int player = squares.Squares.white;
@@ -27,13 +28,17 @@ class _BuildingBoardState extends State<BuildingBoard> {
     game = bishop.Game(variant: bishop.Variant.standard());
     state = game.squaresState(player);
     player = squares.Squares.white;
-    if (ss) setState(() {});
+    if (ss) {
+      ref.read(buildingNotifierProvider.notifier).updatePosition(game);
+      setState(() {});
+    }
   }
 
   void _flipBoard() => setState(() => flipBoard = !flipBoard);
 
   void _onMove(squares.Move move) async {
     bool result = game.makeSquaresMove(move);
+    ref.watch(buildingNotifierProvider.notifier).updatePosition(game);
     if (result) {
       flipBoard = !flipBoard;
       setState(() {
@@ -49,6 +54,7 @@ class _BuildingBoardState extends State<BuildingBoard> {
   void _undo() {
     if (game.history.length == 1) return;
     game.undo();
+    ref.read(buildingNotifierProvider.notifier).updatePosition(game);
     flipBoard = !flipBoard;
     setState(() {
       player =
@@ -61,7 +67,7 @@ class _BuildingBoardState extends State<BuildingBoard> {
 
   @override
   Widget build(BuildContext context) {
-    final possibleMoves = OpeningRepository.getRecommendedMoves(game.fen);
+    final possibleMoves = ref.watch(buildingNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Building Board')),
@@ -119,7 +125,9 @@ class _BuildingBoardState extends State<BuildingBoard> {
                 IconButton(
                   onPressed: () {
                     if (game.history.length == 1) return;
-                    OpeningRepository.addLastMove(game: game, comment: "Test");
+                    ref
+                        .read(buildingNotifierProvider.notifier)
+                        .addLastMove(game: game, comment: "Test");
                   },
                   icon: const Icon(Icons.save),
                 ),

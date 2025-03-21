@@ -1,20 +1,20 @@
 import 'package:bishop/bishop.dart' as bishop;
-import 'package:chess_opening_trainer/infrastructure/datasources/opening_repo.dart';
+import 'package:chess_opening_trainer/domain/training_session_notifier.dart';
 import 'package:chess_opening_trainer/infrastructure/models/models.dart';
 import 'package:chess_opening_trainer/presentation/widgets/history_widet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:square_bishop/square_bishop.dart';
 import 'package:squares/squares.dart' as squares;
 
-class TrainingBoard extends StatefulWidget {
-  const TrainingBoard({super.key, required this.numberOfPositions});
+class TrainingBoard extends ConsumerStatefulWidget {
+  const TrainingBoard({super.key});
 
-  final int numberOfPositions;
   @override
-  State<TrainingBoard> createState() => _TrainingBoardState();
+  ConsumerState<TrainingBoard> createState() => _TrainingBoardConsumerState();
 }
 
-class _TrainingBoardState extends State<TrainingBoard> {
+class _TrainingBoardConsumerState extends ConsumerState<TrainingBoard> {
   late bishop.Game game;
   late SquaresState state;
   int player = squares.Squares.white;
@@ -25,11 +25,7 @@ class _TrainingBoardState extends State<TrainingBoard> {
 
   @override
   void initState() {
-    //TODO: what if no position available
-    positions = OpeningRepository.getMostDuePositions(
-      numberOfPositions: widget.numberOfPositions,
-      forWhite: fromWhitesPerpective,
-    );
+    positions = ref.read(trainingSessionNotifierProvider);
     _loadNextPosition();
     super.initState();
   }
@@ -47,13 +43,9 @@ class _TrainingBoardState extends State<TrainingBoard> {
     chessPosition = positions.first;
     game = GameFromPosition.fromPosition(chessPosition);
     player = game.state.turn;
+    fromWhitesPerpective = player == squares.Squares.white;
     state = game.squaresState(player);
   }
-
-  void _flipBoard() => setState(() {
-    fromWhitesPerpective = !fromWhitesPerpective;
-    setState(_loadNextPosition);
-  });
 
   void _onMove(squares.Move move) async {
     bool moveResult = game.makeSquaresMove(move);
@@ -66,8 +58,11 @@ class _TrainingBoardState extends State<TrainingBoard> {
       );
       return;
     }
-    final guessResult = OpeningRepository.updateMovePlayed(gameAfterMove: game);
+    final guessResult = ref
+        .read(trainingSessionNotifierProvider.notifier)
+        .updateMovePlayed(gameAfterMove: game);
     state = game.squaresState(player);
+    //TODO: remove all setStates once riverpod is implemented
     setState(() {});
 
     final bool correct = guessResult != GuessResult.incorrect;
@@ -119,7 +114,9 @@ class _TrainingBoardState extends State<TrainingBoard> {
 
   @override
   Widget build(BuildContext context) {
-    final possibleMoves = OpeningRepository.getRecommendedMoves(game.fen);
+    final possibleMoves = ref
+        .watch(trainingSessionNotifierProvider.notifier)
+        .getRecommendedMoves(game.fen);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Training Board')),
@@ -179,10 +176,6 @@ class _TrainingBoardState extends State<TrainingBoard> {
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IconButton(
-                  onPressed: _flipBoard,
-                  icon: const Icon(Icons.rotate_left),
-                ),
                 IconButton(onPressed: _undo, icon: const Icon(Icons.undo)),
                 IconButton(
                   onPressed: () => setState(_loadNextPosition),

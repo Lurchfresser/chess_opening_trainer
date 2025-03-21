@@ -1,27 +1,26 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'training_session_notifier.dart';
+part of 'building_notifier.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$trainingSessionNotifierHash() =>
-    r'a758f90ebd3059298ab4d2d7590d1fe011b90e59';
+String _$buildingNotifierHash() => r'af07357ba9211ab18afdb36fd629a2836c274a00';
 
-/// See also [TrainingSessionNotifier].
-@ProviderFor(TrainingSessionNotifier)
-final trainingSessionNotifierProvider =
-    NotifierProvider<TrainingSessionNotifier, List<ChessPosition>>.internal(
-  TrainingSessionNotifier.new,
-  name: r'trainingSessionNotifierProvider',
+/// See also [BuildingNotifier].
+@ProviderFor(BuildingNotifier)
+final buildingNotifierProvider =
+    AutoDisposeNotifierProvider<BuildingNotifier, List<PositionMove>>.internal(
+  BuildingNotifier.new,
+  name: r'buildingNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$trainingSessionNotifierHash,
+      : _$buildingNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$TrainingSessionNotifier = Notifier<List<ChessPosition>>;
+typedef _$BuildingNotifier = AutoDisposeNotifier<List<PositionMove>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
