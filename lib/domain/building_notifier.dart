@@ -7,7 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'building_notifier.g.dart';
 
 @riverpod
-class BuildingNotifier extends _$BuildingNotifier {
+class ReportoirNotifier extends _$ReportoirNotifier {
   late final OpeningRepository _repo;
 
   @override
@@ -22,7 +22,12 @@ class BuildingNotifier extends _$BuildingNotifier {
   }
 
   void addLastMove({required Game game, required String comment}) {
-    //TODO: update state
     _repo.addLastMove(game: game, comment: comment);
+    ref.invalidateSelf();
+  }
+
+  GuessResult addGuess({required String fen, required String algebraic}) {
+    ref.invalidateSelf();
+    return _repo.addGuess(fen: fen, algebraic: algebraic);
   }
 }

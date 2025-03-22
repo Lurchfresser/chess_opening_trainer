@@ -1,5 +1,6 @@
 import 'package:bishop/bishop.dart' as bishop;
-import 'package:chess_opening_trainer/domain/training_session_notifier.dart';
+import 'package:chess_opening_trainer/domain/building_notifier.dart';
+import 'package:chess_opening_trainer/domain/training_session/training_session_notifier.dart';
 import 'package:chess_opening_trainer/infrastructure/models/models.dart';
 import 'package:chess_opening_trainer/presentation/widgets/history_widet.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,13 @@ import 'package:square_bishop/square_bishop.dart';
 import 'package:squares/squares.dart' as squares;
 
 class TrainingBoard extends ConsumerStatefulWidget {
-  const TrainingBoard({super.key});
+  const TrainingBoard({
+    required this.forWhite,
+    required this.numberOfPositions,
+    super.key,
+  });
+  final bool forWhite;
+  final int numberOfPositions;
 
   @override
   ConsumerState<TrainingBoard> createState() => _TrainingBoardConsumerState();
@@ -18,14 +25,18 @@ class _TrainingBoardConsumerState extends ConsumerState<TrainingBoard> {
   late bishop.Game game;
   late SquaresState state;
   int player = squares.Squares.white;
-  bool fromWhitesPerpective = false;
   late ChessPosition chessPosition;
   final Duration animationDuration = const Duration(milliseconds: 250);
   late List<ChessPosition> positions;
 
   @override
   void initState() {
-    positions = ref.read(trainingSessionNotifierProvider);
+    positions = ref.read(
+      duePositionsProvider.call(
+        forWhite: widget.forWhite,
+        numberOfPositions: widget.numberOfPositions,
+      ),
+    );
     _loadNextPosition();
     super.initState();
   }
@@ -43,11 +54,11 @@ class _TrainingBoardConsumerState extends ConsumerState<TrainingBoard> {
     chessPosition = positions.first;
     game = GameFromPosition.fromPosition(chessPosition);
     player = game.state.turn;
-    fromWhitesPerpective = player == squares.Squares.white;
     state = game.squaresState(player);
   }
 
   void _onMove(squares.Move move) async {
+    final fenBefore = game.fen;
     bool moveResult = game.makeSquaresMove(move);
     if (!moveResult) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -58,12 +69,13 @@ class _TrainingBoardConsumerState extends ConsumerState<TrainingBoard> {
       );
       return;
     }
-    final guessResult = ref
-        .read(trainingSessionNotifierProvider.notifier)
-        .updateMovePlayed(gameAfterMove: game);
     state = game.squaresState(player);
-    //TODO: remove all setStates once riverpod is implemented
-    setState(() {});
+    final guessResult = ref
+        .read(reportoirNotifierProvider.notifier)
+        .addGuess(
+          fen: fenBefore,
+          algebraic: game.history.last.meta!.algebraic!,
+        );
 
     final bool correct = guessResult != GuessResult.incorrect;
 
@@ -114,9 +126,9 @@ class _TrainingBoardConsumerState extends ConsumerState<TrainingBoard> {
 
   @override
   Widget build(BuildContext context) {
-    final possibleMoves = ref
-        .watch(trainingSessionNotifierProvider.notifier)
-        .getRecommendedMoves(game.fen);
+    final possibleMoves = ref.watch(
+      savedMovesProvider(fen: game.fen.split(" ").take(4).join(" ")),
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Training Board')),
@@ -155,7 +167,7 @@ class _TrainingBoardConsumerState extends ConsumerState<TrainingBoard> {
                     animatePieces: true,
                     state:
                         ((state.player == squares.Squares.white) ==
-                                fromWhitesPerpective)
+                                widget.forWhite)
                             ? state.board
                             : state.board.flipped(),
                     playState: state.state,

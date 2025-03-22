@@ -1,4 +1,3 @@
-import 'package:chess_opening_trainer/domain/training_session_notifier.dart';
 import 'package:chess_opening_trainer/presentation/pages/building_page/building_board.dart';
 import 'package:chess_opening_trainer/presentation/pages/training_page/training_board.dart';
 import 'package:chess_opening_trainer/presentation/widgets/training_session_dialog.dart';
@@ -56,14 +55,11 @@ class _AppConsumerState extends ConsumerState<App> {
                         builder: (context) => const TrainingSessionDialog(),
                       );
                       if (numberOfPositions == null) return;
-                      ref
-                          .read(trainingSessionNotifierProvider.notifier)
-                          .startSession(
-                            forWhite: numberOfPositions.$2,
-                            numberOfPositions: numberOfPositions.$1,
-                          );
                       setState(() {
-                        currentPage = TrainingBoard();
+                        currentPage = TrainingBoard(
+                          numberOfPositions: numberOfPositions.$1,
+                          forWhite: numberOfPositions.$2,
+                        );
                       });
                       // Add navigation to training screen
                     },

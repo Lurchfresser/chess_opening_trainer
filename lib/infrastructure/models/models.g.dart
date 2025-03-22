@@ -18,11 +18,10 @@ class ChessPositionAdapter extends TypeAdapter<ChessPosition> {
     };
     return ChessPosition(
       fenWithoutMoveCount: fields[0] as String,
-      nextMoves: (fields[1] as Map?)?.cast<String, PositionMove>(),
       gameHistories: (fields[2] as List).cast<GameHistory>(),
       guessHistory: (fields[3] as List).cast<GuessEntry>(),
       comment: fields[4] as String?,
-    );
+    )..savedMoves = (fields[1] as Map).cast<String, PositionMove>();
   }
 
   @override
@@ -32,7 +31,7 @@ class ChessPositionAdapter extends TypeAdapter<ChessPosition> {
       ..writeByte(0)
       ..write(obj.fenWithoutMoveCount)
       ..writeByte(1)
-      ..write(obj.nextMoves)
+      ..write(obj.savedMoves)
       ..writeByte(2)
       ..write(obj.gameHistories)
       ..writeByte(3)

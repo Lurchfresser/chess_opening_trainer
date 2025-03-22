@@ -6,21 +6,21 @@ part of 'building_notifier.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$buildingNotifierHash() => r'af07357ba9211ab18afdb36fd629a2836c274a00';
+String _$reportoirNotifierHash() => r'2d2e06e428c429f556a82379cce1297580b9de39';
 
-/// See also [BuildingNotifier].
-@ProviderFor(BuildingNotifier)
-final buildingNotifierProvider =
-    AutoDisposeNotifierProvider<BuildingNotifier, List<PositionMove>>.internal(
-  BuildingNotifier.new,
-  name: r'buildingNotifierProvider',
+/// See also [ReportoirNotifier].
+@ProviderFor(ReportoirNotifier)
+final reportoirNotifierProvider =
+    AutoDisposeNotifierProvider<ReportoirNotifier, List<PositionMove>>.internal(
+  ReportoirNotifier.new,
+  name: r'reportoirNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$buildingNotifierHash,
+      : _$reportoirNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$BuildingNotifier = AutoDisposeNotifier<List<PositionMove>>;
+typedef _$ReportoirNotifier = AutoDisposeNotifier<List<PositionMove>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

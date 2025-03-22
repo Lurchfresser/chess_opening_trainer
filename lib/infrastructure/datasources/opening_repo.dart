@@ -42,6 +42,26 @@ class OpeningRepository {
     return position;
   }
 
+  ChessPosition? getPosition(String fen) {
+    fen = normalizeFen(fen);
+
+    return _positionsBox.get(fen);
+  }
+
+  GuessResult addGuess({required String fen, required String algebraic}) {
+    final position = getPosition(fen);
+    if (position == null) {
+      throw Exception("game not found");
+    }
+
+    final move = position.savedMoves[algebraic];
+    final result = move == null ? GuessResult.incorrect : GuessResult.incorrect;
+    position.guessHistory.add(
+      GuessEntry(dateTime: DateTime.now(), result: result),
+    );
+    return result;
+  }
+
   // Add a move to a position
   Future<void> addLastMove({required bishop.Game game, String? comment}) async {
     ChessPosition position = getOrCreatePosition(game);
@@ -49,7 +69,7 @@ class OpeningRepository {
     final algebraic = game.history.last.meta!.algebraic!;
     final formatted = game.history.last.meta!.prettyName!;
 
-    position.nextMoves[algebraic] = PositionMove(
+    position.savedMoves[algebraic] = PositionMove(
       algebraic: algebraic,
       formatted: formatted,
       comment: comment,
@@ -61,7 +81,7 @@ class OpeningRepository {
   // Get all recommended moves from a position
   List<PositionMove> getRecommendedMoves(String fen) {
     final position = _positionsBox.get(normalizeFen(fen));
-    return position?.nextMoves.values.toList() ?? [];
+    return position?.savedMoves.values.toList() ?? [];
   }
 
   // Helper function to normalize FEN string (removing move counters if needed)
@@ -83,7 +103,7 @@ class OpeningRepository {
     }
 
     final randomPosition = positions[math.Random().nextInt(positions.length)];
-    final moves = randomPosition.nextMoves.values.toList();
+    final moves = randomPosition.savedMoves.values.toList();
     if (moves.isEmpty) {
       throw Exception('No moves available for this position');
     }
@@ -102,7 +122,7 @@ class OpeningRepository {
     }
 
     final positionMove =
-        positionBeforeMove.nextMoves[gameAfterMove
+        positionBeforeMove.savedMoves[gameAfterMove
             .history
             .last
             .meta!
@@ -110,14 +130,7 @@ class OpeningRepository {
 
     //TODO: implement logic for guessed other move
     final GuessEntry entry;
-    if (positionMove == null) {
-      entry = GuessEntry(
-        dateTime: DateTime.now(),
-        result: GuessResult.incorrect,
-      );
-    } else {
-      entry = GuessEntry(dateTime: DateTime.now(), result: GuessResult.correct);
-    }
+    entry = GuessEntry(dateTime: DateTime.now(), result: GuessResult.correct);
     positionBeforeMove.guessHistory.add(entry);
     positionBeforeMove.save();
 

@@ -29,7 +29,7 @@ class _BuildingBoardConsumerState extends ConsumerState<BuildingBoard> {
     state = game.squaresState(player);
     player = squares.Squares.white;
     if (ss) {
-      ref.read(buildingNotifierProvider.notifier).updatePosition(game);
+      ref.read(reportoirNotifierProvider.notifier).updatePosition(game);
       setState(() {});
     }
   }
@@ -38,7 +38,7 @@ class _BuildingBoardConsumerState extends ConsumerState<BuildingBoard> {
 
   void _onMove(squares.Move move) async {
     bool result = game.makeSquaresMove(move);
-    ref.watch(buildingNotifierProvider.notifier).updatePosition(game);
+    ref.watch(reportoirNotifierProvider.notifier).updatePosition(game);
     if (result) {
       flipBoard = !flipBoard;
       setState(() {
@@ -54,7 +54,7 @@ class _BuildingBoardConsumerState extends ConsumerState<BuildingBoard> {
   void _undo() {
     if (game.history.length == 1) return;
     game.undo();
-    ref.read(buildingNotifierProvider.notifier).updatePosition(game);
+    ref.read(reportoirNotifierProvider.notifier).updatePosition(game);
     flipBoard = !flipBoard;
     setState(() {
       player =
@@ -67,7 +67,7 @@ class _BuildingBoardConsumerState extends ConsumerState<BuildingBoard> {
 
   @override
   Widget build(BuildContext context) {
-    final possibleMoves = ref.watch(buildingNotifierProvider);
+    final possibleMoves = ref.watch(reportoirNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Building Board')),
@@ -126,7 +126,7 @@ class _BuildingBoardConsumerState extends ConsumerState<BuildingBoard> {
                   onPressed: () {
                     if (game.history.length == 1) return;
                     ref
-                        .read(buildingNotifierProvider.notifier)
+                        .read(reportoirNotifierProvider.notifier)
                         .addLastMove(game: game, comment: "Test");
                   },
                   icon: const Icon(Icons.save),

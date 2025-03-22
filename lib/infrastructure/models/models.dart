@@ -10,7 +10,7 @@ class ChessPosition extends HiveObject {
 
   @HiveField(1)
   /// Map of possible moves from this position, the key is the move in algebraic notation
-  Map<String, PositionMove> nextMoves;
+  Map<String, PositionMove> savedMoves;
 
   @HiveField(2)
   List<GameHistory> gameHistories; // List of game histories for this position
@@ -27,7 +27,7 @@ class ChessPosition extends HiveObject {
     required this.gameHistories,
     required this.guessHistory,
     this.comment,
-  }) : nextMoves =
+  }) : savedMoves =
            nextMoves != null
                ? Map<String, PositionMove>.of(nextMoves)
                : {}; // Ensure it's modifiable

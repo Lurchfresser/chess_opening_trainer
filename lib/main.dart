@@ -15,8 +15,8 @@ void main() async {
 
   await initDependencies();
 
-  //clear box for debugging
-  await Hive.deleteBoxFromDisk('positions');
+  // //clear box for debugging
+  // await Hive.deleteBoxFromDisk('positions');
 
   // Open the box
   await Hive.openBox<ChessPosition>('positions');
