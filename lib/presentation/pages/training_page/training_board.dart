@@ -1,6 +1,5 @@
 import 'package:bishop/bishop.dart' as bishop;
 import 'package:chess_opening_trainer/domain/building_notifier.dart';
-import 'package:chess_opening_trainer/domain/training_session/training_session_notifier.dart';
 import 'package:chess_opening_trainer/infrastructure/models/models.dart';
 import 'package:chess_opening_trainer/presentation/widgets/history_widet.dart';
 import 'package:flutter/material.dart';
@@ -57,7 +56,7 @@ class _TrainingBoardConsumerState extends ConsumerState<TrainingBoard> {
     state = game.squaresState(player);
   }
 
-  void _onMove(squares.Move move) async {
+  Future<void> _onMove(squares.Move move) async {
     final fenBefore = game.fen;
     bool moveResult = game.makeSquaresMove(move);
     if (!moveResult) {
@@ -70,12 +69,12 @@ class _TrainingBoardConsumerState extends ConsumerState<TrainingBoard> {
       return;
     }
     state = game.squaresState(player);
-    final guessResult = ref
-        .read(reportoirNotifierProvider.notifier)
-        .addGuess(
-          fen: fenBefore,
-          algebraic: game.history.last.meta!.algebraic!,
-        );
+    final guessResult = ref.read(
+      guessProvider(
+        fen: fenBefore,
+        algebraic: game.history.last.meta!.algebraic!,
+      ),
+    );
 
     final bool correct = guessResult != GuessResult.incorrect;
 

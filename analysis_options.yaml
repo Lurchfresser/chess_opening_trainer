@@ -3,3 +3,14 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   plugins:
     - custom_lint
+
+
+linter:
+  rules:
+    - cancel_subscriptions
+    - avoid_void_async
+    - discarded_futures
+    - unawaited_futures
+    - unnecessary_async
+    - unnecessary_await_in_return
+    - await_only_futures

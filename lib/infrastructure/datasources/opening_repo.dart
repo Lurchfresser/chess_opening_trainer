@@ -1,12 +1,16 @@
+import 'dart:async';
+import 'dart:collection';
 import 'dart:math' as math;
 
 import 'package:bishop/bishop.dart' as bishop;
 import 'package:chess_opening_trainer/infrastructure/models/models.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hive/hive.dart';
 
 const dueDuration = Duration(seconds: 20);
 
 class OpeningRepository {
+  //TODO: refactor to use different boxes
   final Box<ChessPosition> _positionsBox = Hive.box<ChessPosition>('positions');
 
   numberOfPositionsFor({required bool forWhite}) {
@@ -16,8 +20,7 @@ class OpeningRepository {
   }
 
   // Get a position by FEN, create if it doesn't exist
-  ChessPosition getOrCreatePosition(bishop.Game game) {
-    final move = game.undo();
+  Future<ChessPosition> getOrCreatePosition(bishop.Game game) async {
     // Create a normalized key from the FEN string (remove unnecessary parts)
     String key = normalizeFen(game.fen);
 
@@ -31,14 +34,11 @@ class OpeningRepository {
         fenWithoutMoveCount: key,
         gameHistories: [GameHistory.fromGame(game)],
       );
-      _positionsBox.put(key, position);
+      await _positionsBox.put(key, position);
     } else {
       // Update the game history if it already exists
       position.gameHistories.add(GameHistory.fromGame(game));
     }
-
-    game.makeMove(move!);
-
     return position;
   }
 
@@ -55,27 +55,61 @@ class OpeningRepository {
     }
 
     final move = position.savedMoves[algebraic];
-    final result = move == null ? GuessResult.incorrect : GuessResult.incorrect;
+    final result = move == null ? GuessResult.incorrect : GuessResult.correct;
     position.guessHistory.add(
       GuessEntry(dateTime: DateTime.now(), result: result),
     );
     return result;
   }
 
+  //TODO: only add white or black moves
   // Add a move to a position
-  Future<void> addLastMove({required bishop.Game game, String? comment}) async {
-    ChessPosition position = getOrCreatePosition(game);
+  Future<void> addOpeningTillHere({
+    required bishop.Game game,
+    required bool forWhite,
+    String? comment,
+  }) async {
+    Queue<bishop.Move> moves = Queue();
+    //avoid off by one with length and avoid "empty" move at the start of games
 
-    final algebraic = game.history.last.meta!.algebraic!;
-    final formatted = game.history.last.meta!.prettyName!;
+    final futures = <Future>[];
 
-    position.savedMoves[algebraic] = PositionMove(
-      algebraic: algebraic,
-      formatted: formatted,
-      comment: comment,
-    );
+    while (true) {
+      final algebraic = game.history.last.meta?.algebraic;
+      final formatted = game.history.last.meta?.prettyName;
 
-    await position.save();
+      if (algebraic == null || formatted == null) break;
+
+      final move = game.undo();
+      moves.addFirst(move!);
+      if (_positionsBox.containsKey(normalizeFen(game.fen))) {
+        break;
+      }
+
+      if ((game.turn == bishop.Bishop.white) != forWhite) {
+        continue;
+      }
+
+      //TODO: This should always create
+
+      futures.add(
+        getOrCreatePosition(game).then((position) {
+          position.savedMoves[algebraic] = PositionMove(
+            algebraic: algebraic,
+            formatted: formatted,
+            comment: comment,
+          );
+
+          position.save();
+        }),
+      );
+    }
+    for (var move in moves) {
+      game.makeMove(move);
+    }
+    debugPrint("repo${game.fen}");
+
+    await Future.wait(futures);
   }
 
   // Get all recommended moves from a position
@@ -121,18 +155,11 @@ class OpeningRepository {
       throw Exception('Position not found');
     }
 
-    final positionMove =
-        positionBeforeMove.savedMoves[gameAfterMove
-            .history
-            .last
-            .meta!
-            .algebraic];
-
     //TODO: implement logic for guessed other move
     final GuessEntry entry;
     entry = GuessEntry(dateTime: DateTime.now(), result: GuessResult.correct);
     positionBeforeMove.guessHistory.add(entry);
-    positionBeforeMove.save();
+    unawaited(positionBeforeMove.save());
 
     return entry.result;
   }

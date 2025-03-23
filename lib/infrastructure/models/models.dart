@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:bishop/bishop.dart' as bishop;
 import 'package:hive/hive.dart';
 
@@ -124,5 +126,11 @@ extension GameFromPosition on bishop.Game {
       }
     }
     return game;
+  }
+}
+
+extension Random<T> on List<T> {
+  T random() {
+    return this[math.Random().nextInt(length - 1)];
   }
 }

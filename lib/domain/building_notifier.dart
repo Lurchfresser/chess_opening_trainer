@@ -1,33 +1,59 @@
+import 'dart:async';
+
 import 'package:bishop/bishop.dart';
 import 'package:chess_opening_trainer/dependencies.dart';
 import 'package:chess_opening_trainer/infrastructure/datasources/opening_repo.dart';
 import 'package:chess_opening_trainer/infrastructure/models/models.dart';
+import 'package:riverpod/riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'building_notifier.g.dart';
 
 @riverpod
-class ReportoirNotifier extends _$ReportoirNotifier {
-  late final OpeningRepository _repo;
+GuessResult guess(Ref ref, {required String fen, required String algebraic}) {
+  final OpeningRepository repo = sl<OpeningRepository>();
+  final result = repo.addGuess(fen: fen, algebraic: algebraic);
+  ref.invalidateSelf();
+  return result;
+}
 
-  @override
-  List<PositionMove> build() {
-    _repo = sl<OpeningRepository>();
-    return [];
-  }
+@riverpod
+void addOpeningTillHere(
+  Ref ref, {
+  required Game game,
+  required String comment,
+  required bool forWhite,
+}) {
+  final repo = sl<OpeningRepository>();
+  unawaited(
+    repo
+        .addOpeningTillHere(game: game, comment: comment, forWhite: forWhite)
+        .then((value) {
+          ref.invalidateSelf();
+          ref.invalidate(savedMovesProvider);
+          ref.invalidate(duePositionsProvider);
+          ref.invalidate(guessProvider);
+        }),
+  );
+}
 
-  //TODO: this architecture is not good, we need to refactor this
-  void updatePosition(Game game) {
-    state = _repo.getRecommendedMoves(game.fen);
-  }
+@riverpod
+List<ChessPosition> duePositions(
+  Ref ref, {
+  required int numberOfPositions,
+  required bool forWhite,
+}) {
+  final OpeningRepository repo = sl();
+  return repo.getMostDuePositions(
+    numberOfPositions: numberOfPositions,
+    forWhite: forWhite,
+  );
+}
 
-  void addLastMove({required Game game, required String comment}) {
-    _repo.addLastMove(game: game, comment: comment);
-    ref.invalidateSelf();
-  }
+@riverpod
+List<PositionMove> savedMoves(Ref ref, {required String fen}) {
+  final OpeningRepository repo = sl();
+  fen = repo.normalizeFen(fen);
 
-  GuessResult addGuess({required String fen, required String algebraic}) {
-    ref.invalidateSelf();
-    return _repo.addGuess(fen: fen, algebraic: algebraic);
-  }
+  return repo.getRecommendedMoves(fen);
 }
