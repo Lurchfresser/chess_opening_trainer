@@ -203,7 +203,7 @@ class _RandomTrainingSessionManagerProviderElement
 }
 
 String _$recursiveTrainingSessionManagerHash() =>
-    r'8d477a8cd4fa4f1e4c4e9fc1889aad30ad2a7f79';
+    r'454351108c5c9b1077b1c7d4893464231015795f';
 
 abstract class _$RecursiveTrainingSessionManager
     extends BuildlessAutoDisposeNotifier<bishop.Game> {

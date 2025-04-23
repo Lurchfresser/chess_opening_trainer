@@ -97,6 +97,7 @@ class RecursiveTrainingSessionManager extends _$RecursiveTrainingSessionManager
     await Future.delayed(animationDuration);
 
     if (correct) {
+      _visitedPositions.add(fenBefore);
       _loadNextPosition();
       return true;
     } else {
@@ -121,7 +122,14 @@ class RecursiveTrainingSessionManager extends _$RecursiveTrainingSessionManager
         break;
       }
     }
-
+    if (nextPossibleMoves.isEmpty) {
+      final move = state.undo();
+      if (move == null) return;
+      final move2 = state.undo();
+      if (move2 != null) {
+        _loadNextPosition();
+      }
+    }
     ref.notifyListeners();
   }
 }
