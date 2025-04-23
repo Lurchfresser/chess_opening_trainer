@@ -6,7 +6,7 @@ part of 'building_notifier.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$guessHash() => r'd68a66f4cd13725a14867a351cf675d44dba278b';
+String _$guessHash() => r'529166b6fe9d9ebbf3623581438bf785b57d50c7';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -42,10 +42,12 @@ class GuessFamily extends Family<GuessResult> {
   GuessProvider call({
     required String fen,
     required String algebraic,
+    required String repoName,
   }) {
     return GuessProvider(
       fen: fen,
       algebraic: algebraic,
+      repoName: repoName,
     );
   }
 
@@ -56,6 +58,7 @@ class GuessFamily extends Family<GuessResult> {
     return call(
       fen: provider.fen,
       algebraic: provider.algebraic,
+      repoName: provider.repoName,
     );
   }
 
@@ -80,11 +83,13 @@ class GuessProvider extends AutoDisposeProvider<GuessResult> {
   GuessProvider({
     required String fen,
     required String algebraic,
+    required String repoName,
   }) : this._internal(
           (ref) => guess(
             ref as GuessRef,
             fen: fen,
             algebraic: algebraic,
+            repoName: repoName,
           ),
           from: guessProvider,
           name: r'guessProvider',
@@ -96,6 +101,7 @@ class GuessProvider extends AutoDisposeProvider<GuessResult> {
           allTransitiveDependencies: GuessFamily._allTransitiveDependencies,
           fen: fen,
           algebraic: algebraic,
+          repoName: repoName,
         );
 
   GuessProvider._internal(
@@ -107,10 +113,12 @@ class GuessProvider extends AutoDisposeProvider<GuessResult> {
     required super.from,
     required this.fen,
     required this.algebraic,
+    required this.repoName,
   }) : super.internal();
 
   final String fen;
   final String algebraic;
+  final String repoName;
 
   @override
   Override overrideWith(
@@ -127,6 +135,7 @@ class GuessProvider extends AutoDisposeProvider<GuessResult> {
         debugGetCreateSourceHash: null,
         fen: fen,
         algebraic: algebraic,
+        repoName: repoName,
       ),
     );
   }
@@ -140,7 +149,8 @@ class GuessProvider extends AutoDisposeProvider<GuessResult> {
   bool operator ==(Object other) {
     return other is GuessProvider &&
         other.fen == fen &&
-        other.algebraic == algebraic;
+        other.algebraic == algebraic &&
+        other.repoName == repoName;
   }
 
   @override
@@ -148,6 +158,7 @@ class GuessProvider extends AutoDisposeProvider<GuessResult> {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
     hash = _SystemHash.combine(hash, fen.hashCode);
     hash = _SystemHash.combine(hash, algebraic.hashCode);
+    hash = _SystemHash.combine(hash, repoName.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -161,6 +172,9 @@ mixin GuessRef on AutoDisposeProviderRef<GuessResult> {
 
   /// The parameter `algebraic` of this provider.
   String get algebraic;
+
+  /// The parameter `repoName` of this provider.
+  String get repoName;
 }
 
 class _GuessProviderElement extends AutoDisposeProviderElement<GuessResult>
@@ -171,10 +185,12 @@ class _GuessProviderElement extends AutoDisposeProviderElement<GuessResult>
   String get fen => (origin as GuessProvider).fen;
   @override
   String get algebraic => (origin as GuessProvider).algebraic;
+  @override
+  String get repoName => (origin as GuessProvider).repoName;
 }
 
 String _$addOpeningTillHereHash() =>
-    r'80b61e3cb27cc761869c2edd654301cbc381232e';
+    r'68013279dc554211faf669e0fc999c92f726d5a3';
 
 /// See also [addOpeningTillHere].
 @ProviderFor(addOpeningTillHere)
@@ -337,7 +353,7 @@ class _AddOpeningTillHereProviderElement
   bool get forWhite => (origin as AddOpeningTillHereProvider).forWhite;
 }
 
-String _$duePositionsHash() => r'0e627a8902299887f046aa232b4499cacc736a2a';
+String _$duePositionsHash() => r'01a0e566898a1b32343a1f73b8624fbece2af69c';
 
 /// See also [duePositions].
 @ProviderFor(duePositions)
@@ -486,7 +502,7 @@ class _DuePositionsProviderElement
   bool get forWhite => (origin as DuePositionsProvider).forWhite;
 }
 
-String _$savedMovesHash() => r'30667e98429fd2e37a95748436a48c710f49c9c9';
+String _$savedMovesHash() => r'900ed29c8d4a8fba4d73956a8c9676e3d3ae6284';
 
 /// See also [savedMoves].
 @ProviderFor(savedMoves)
@@ -500,9 +516,11 @@ class SavedMovesFamily extends Family<List<PositionMove>> {
   /// See also [savedMoves].
   SavedMovesProvider call({
     required String fen,
+    required String repoName,
   }) {
     return SavedMovesProvider(
       fen: fen,
+      repoName: repoName,
     );
   }
 
@@ -512,6 +530,7 @@ class SavedMovesFamily extends Family<List<PositionMove>> {
   ) {
     return call(
       fen: provider.fen,
+      repoName: provider.repoName,
     );
   }
 
@@ -535,10 +554,12 @@ class SavedMovesProvider extends AutoDisposeProvider<List<PositionMove>> {
   /// See also [savedMoves].
   SavedMovesProvider({
     required String fen,
+    required String repoName,
   }) : this._internal(
           (ref) => savedMoves(
             ref as SavedMovesRef,
             fen: fen,
+            repoName: repoName,
           ),
           from: savedMovesProvider,
           name: r'savedMovesProvider',
@@ -550,6 +571,7 @@ class SavedMovesProvider extends AutoDisposeProvider<List<PositionMove>> {
           allTransitiveDependencies:
               SavedMovesFamily._allTransitiveDependencies,
           fen: fen,
+          repoName: repoName,
         );
 
   SavedMovesProvider._internal(
@@ -560,9 +582,11 @@ class SavedMovesProvider extends AutoDisposeProvider<List<PositionMove>> {
     required super.debugGetCreateSourceHash,
     required super.from,
     required this.fen,
+    required this.repoName,
   }) : super.internal();
 
   final String fen;
+  final String repoName;
 
   @override
   Override overrideWith(
@@ -578,6 +602,7 @@ class SavedMovesProvider extends AutoDisposeProvider<List<PositionMove>> {
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
         fen: fen,
+        repoName: repoName,
       ),
     );
   }
@@ -589,13 +614,16 @@ class SavedMovesProvider extends AutoDisposeProvider<List<PositionMove>> {
 
   @override
   bool operator ==(Object other) {
-    return other is SavedMovesProvider && other.fen == fen;
+    return other is SavedMovesProvider &&
+        other.fen == fen &&
+        other.repoName == repoName;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
     hash = _SystemHash.combine(hash, fen.hashCode);
+    hash = _SystemHash.combine(hash, repoName.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -606,6 +634,9 @@ class SavedMovesProvider extends AutoDisposeProvider<List<PositionMove>> {
 mixin SavedMovesRef on AutoDisposeProviderRef<List<PositionMove>> {
   /// The parameter `fen` of this provider.
   String get fen;
+
+  /// The parameter `repoName` of this provider.
+  String get repoName;
 }
 
 class _SavedMovesProviderElement
@@ -614,6 +645,8 @@ class _SavedMovesProviderElement
 
   @override
   String get fen => (origin as SavedMovesProvider).fen;
+  @override
+  String get repoName => (origin as SavedMovesProvider).repoName;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

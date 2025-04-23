@@ -8,7 +8,8 @@ import 'package:square_bishop/square_bishop.dart';
 import 'package:squares/squares.dart' as squares;
 
 class BuildingBoard extends ConsumerStatefulWidget {
-  const BuildingBoard({super.key});
+  final String repoName;
+  const BuildingBoard({super.key, required this.repoName});
   @override
   ConsumerState<BuildingBoard> createState() => _BuildingBoardConsumerState();
 }
@@ -65,8 +66,9 @@ class _BuildingBoardConsumerState extends ConsumerState<BuildingBoard> {
 
   @override
   Widget build(BuildContext context) {
-    final possibleMoves = ref.watch(savedMovesProvider(fen: game.fen));
-    debugPrint(game.fen);
+    final possibleMoves = ref.watch(
+      savedMovesProvider(fen: game.fen, repoName: widget.repoName),
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Building Board')),

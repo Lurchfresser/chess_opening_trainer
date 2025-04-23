@@ -13,6 +13,11 @@ Future<void> initDependencies() async {
   Hive.registerAdapter(GuessEntryAdapter());
   Hive.registerAdapter(GuessResultAdapter());
 
-  // Register repositories
-  sl.registerLazySingleton<OpeningRepository>(() => OpeningRepository());
+  final repos = ["black", "white"];
+  for (var repoName in repos) {
+    sl.registerLazySingleton<OpeningRepository>(
+      () => OpeningRepository(repoName: repoName),
+      instanceName: repoName,
+    );
+  }
 }

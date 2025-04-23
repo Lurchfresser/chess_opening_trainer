@@ -147,7 +147,12 @@ class _TrainingBoardConsumerState extends ConsumerState<TrainingBoard> {
     final state = game.squaresState(
       widget.forWhite ? squares.Squares.white : squares.Squares.black,
     );
-    final possibleMoves = ref.watch(savedMovesProvider(fen: game.fen));
+    final possibleMoves = ref.watch(
+      savedMovesProvider(
+        fen: game.fen,
+        repoName: widget.forWhite ? "white" : "black",
+      ),
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Training Board')),

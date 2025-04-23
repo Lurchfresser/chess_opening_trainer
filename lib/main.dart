@@ -15,11 +15,12 @@ void main() async {
 
   await initDependencies();
 
-  // //clear box for debugging
-  // await Hive.deleteBoxFromDisk('positions');
+  //clear boxes for debugging
+  await Hive.deleteBoxFromDisk('white');
+  await Hive.deleteBoxFromDisk('black');
 
-  // Open the box
-  await Hive.openBox<ChessPosition>('positions');
+  await Hive.openBox<ChessPosition>('white');
+  await Hive.openBox<ChessPosition>('black');
 
   runApp(ProviderScope(child: const App()));
 }

@@ -10,8 +10,13 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'building_notifier.g.dart';
 
 @riverpod
-GuessResult guess(Ref ref, {required String fen, required String algebraic}) {
-  final OpeningRepository repo = sl<OpeningRepository>();
+GuessResult guess(
+  Ref ref, {
+  required String fen,
+  required String algebraic,
+  required String repoName,
+}) {
+  final OpeningRepository repo = sl<OpeningRepository>(instanceName: repoName);
   final result = repo.addGuess(fen: fen, algebraic: algebraic);
   ref.invalidateSelf();
   return result;
@@ -24,16 +29,17 @@ void addOpeningTillHere(
   required String comment,
   required bool forWhite,
 }) {
-  final repo = sl<OpeningRepository>();
+  final repo = sl<OpeningRepository>(
+    //TODO:
+    instanceName: forWhite ? "white" : "black",
+  );
   unawaited(
-    repo
-        .addOpeningTillHere(game: game, comment: comment, forWhite: forWhite)
-        .then((value) {
-          ref.invalidateSelf();
-          ref.invalidate(savedMovesProvider);
-          ref.invalidate(duePositionsProvider);
-          ref.invalidate(guessProvider);
-        }),
+    repo.addOpeningTillHere(game: game, comment: comment).then((value) {
+      ref.invalidateSelf();
+      ref.invalidate(savedMovesProvider);
+      ref.invalidate(duePositionsProvider);
+      ref.invalidate(guessProvider);
+    }),
   );
 }
 
@@ -43,7 +49,7 @@ List<ChessPosition> duePositions(
   required int numberOfPositions,
   required bool forWhite,
 }) {
-  final OpeningRepository repo = sl();
+  final OpeningRepository repo = sl(instanceName: forWhite ? "white" : "black");
   return repo.getMostDuePositions(
     numberOfPositions: numberOfPositions,
     forWhite: forWhite,
@@ -51,9 +57,13 @@ List<ChessPosition> duePositions(
 }
 
 @riverpod
-List<PositionMove> savedMoves(Ref ref, {required String fen}) {
-  final OpeningRepository repo = sl();
-  fen = repo.normalizeFen(fen);
+List<PositionMove> savedMoves(
+  Ref ref, {
+  required String fen,
+  required String repoName,
+}) {
+  final OpeningRepository repo = sl(instanceName: repoName);
+  fen = OpeningRepository.normalizeFen(fen);
 
   return repo.getRecommendedMoves(fen);
 }

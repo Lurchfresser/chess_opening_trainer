@@ -40,6 +40,8 @@ class RandomTrainingSessionManager extends _$RandomTrainingSessionManager
     }
     final guessResult = ref.read(
       guessProvider(
+        //TODO:
+        repoName: forWhite ? "white" : "black",
         fen: fenBefore,
         algebraic: state.history.last.meta!.algebraic!,
       ),
@@ -93,6 +95,8 @@ class RecursiveTrainingSessionManager extends _$RecursiveTrainingSessionManager
 
     GuessResult guessResult = ref.read(
       guessProvider(
+        //TODO:
+        repoName: forWhite ? "white" : "black",
         fen: fenBefore,
         algebraic: state.history.last.meta!.algebraic!,
       ),
@@ -134,7 +138,13 @@ class RecursiveTrainingSessionManager extends _$RecursiveTrainingSessionManager
     for (var i = 0; i < nextPossibleMoves.length; i++) {
       final move = nextPossibleMoves[i];
       state.makeMove(move);
-      final savedMoves = ref.read(savedMovesProvider(fen: state.fenNormalized));
+      //TODO:
+      final savedMoves = ref.read(
+        savedMovesProvider(
+          fen: state.fenNormalized,
+          repoName: forWhite ? "white" : "black",
+        ),
+      );
       if (savedMoves.isEmpty ||
           (_visitedPositions[state.fenNormalized] ?? -1) >= savedMoves.length) {
         nextPossibleMoves.removeAt(i);

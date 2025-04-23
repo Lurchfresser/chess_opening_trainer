@@ -4,20 +4,17 @@ import 'dart:math' as math;
 
 import 'package:bishop/bishop.dart' as bishop;
 import 'package:chess_opening_trainer/infrastructure/models/models.dart';
-import 'package:flutter/rendering.dart';
 import 'package:hive/hive.dart';
 
 const dueDuration = Duration(seconds: 20);
 
 class OpeningRepository {
-  //TODO: refactor to use different boxes
-  final Box<ChessPosition> _positionsBox = Hive.box<ChessPosition>('positions');
+  final String repoName;
+  late final Box<ChessPosition> _positionsBox = Hive.box<ChessPosition>(
+    repoName,
+  );
 
-  numberOfPositionsFor({required bool forWhite}) {
-    return _positionsBox.values
-        .where((position) => position.isWhiteToMove == forWhite)
-        .length;
-  }
+  OpeningRepository({required this.repoName});
 
   // Get a position by FEN, create if it doesn't exist
   Future<ChessPosition> getOrCreatePosition(bishop.Game game) async {
@@ -62,11 +59,9 @@ class OpeningRepository {
     return result;
   }
 
-  //TODO: only add white or black moves
   // Add a move to a position
   Future<void> addOpeningTillHere({
     required bishop.Game game,
-    required bool forWhite,
     String? comment,
   }) async {
     Queue<bishop.Move> moves = Queue();
@@ -83,11 +78,11 @@ class OpeningRepository {
       final move = game.undo();
       moves.addFirst(move!);
 
-      if ((game.turn == bishop.Bishop.white) != forWhite) {
+      //TODO: This should always create
+
+      if (_positionsBox.containsKey(normalizeFen(game.fen))) {
         continue;
       }
-
-      //TODO: This should always create
 
       futures.add(
         getOrCreatePosition(game).then((position) {
@@ -100,15 +95,10 @@ class OpeningRepository {
           position.save();
         }),
       );
-
-      if (_positionsBox.containsKey(normalizeFen(game.fen))) {
-        break;
-      }
     }
     for (var move in moves) {
       game.makeMove(move);
     }
-    debugPrint("repo${game.fen}");
 
     await Future.wait(futures);
   }
@@ -120,7 +110,7 @@ class OpeningRepository {
   }
 
   // Helper function to normalize FEN string (removing move counters if needed)
-  String normalizeFen(String fen) {
+  static String normalizeFen(String fen) {
     // Just use the position part of the FEN
     return fen.split(' ').take(4).join(' ');
   }

@@ -12,7 +12,7 @@ class App extends ConsumerStatefulWidget {
 }
 
 class _AppConsumerState extends ConsumerState<App> {
-  Widget currentPage = const BuildingBoard();
+  Widget currentPage = const BuildingBoard(repoName: "white");
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,10 @@ class _AppConsumerState extends ConsumerState<App> {
                     onTap: () {
                       Navigator.pop(context);
                       setState(() {
-                        currentPage = const BuildingBoard();
+                        currentPage = const BuildingBoard(
+                          //TODO:
+                          repoName: "white",
+                        );
                       });
                       // Add navigation to building screen
                     },
