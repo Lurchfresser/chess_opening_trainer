@@ -7,7 +7,7 @@ part of 'training_session_manager.dart';
 // **************************************************************************
 
 String _$randomTrainingSessionManagerHash() =>
-    r'49d2c3c0d8b326f2e1f256a560a6c81e195dcc18';
+    r'0884a7a03c39256d55c70ca7a5536af23105f8bd';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -203,7 +203,7 @@ class _RandomTrainingSessionManagerProviderElement
 }
 
 String _$recursiveTrainingSessionManagerHash() =>
-    r'3d448e529b68f0e106b31adf555e2cd839ab34f2';
+    r'a2baf32d608a4da4b41af8f5c1a58000eee18f59';
 
 abstract class _$RecursiveTrainingSessionManager
     extends BuildlessAutoDisposeNotifier<bishop.Game> {

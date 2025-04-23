@@ -33,7 +33,7 @@ class RandomTrainingSessionManager extends _$RandomTrainingSessionManager
     if (_positions.isEmpty) {
       return null;
     }
-    final fenBefore = state.fen;
+    final fenBefore = state.fenNormalized;
     bool moveResult = state.makeSquaresMove(move);
     if (!moveResult) {
       return null;
@@ -85,7 +85,7 @@ class RecursiveTrainingSessionManager extends _$RecursiveTrainingSessionManager
     squares.Move move,
     Duration animationDuration,
   ) async {
-    final fenBefore = state.fen;
+    final fenBefore = state.fenNormalized;
     bool moveResult = state.makeSquaresMove(move);
     if (!moveResult) {
       return null;
@@ -104,14 +104,13 @@ class RecursiveTrainingSessionManager extends _$RecursiveTrainingSessionManager
         await Future.delayed(Duration(milliseconds: 150));
         state.undo();
       case GuessResult.correct:
-        if ((_visitedPositions[state.fen] ?? -1) > 0) {
+        if ((_visitedPositions[state.fenNormalized] ?? -1) > 0) {
           guessResult = GuessResult.guessedOtherMove;
           state.undo();
-
           break;
         }
         _visitedPositions.update(
-          state.fen,
+          state.fenNormalized,
           (val) => val + 1,
           ifAbsent: () => 1,
         );
@@ -135,9 +134,9 @@ class RecursiveTrainingSessionManager extends _$RecursiveTrainingSessionManager
     for (var i = 0; i < nextPossibleMoves.length; i++) {
       final move = nextPossibleMoves[i];
       state.makeMove(move);
-      final savedMoves = ref.read(savedMovesProvider(fen: state.fen));
+      final savedMoves = ref.read(savedMovesProvider(fen: state.fenNormalized));
       if (savedMoves.isEmpty ||
-          (_visitedPositions[state.fen] ?? -1) >= savedMoves.length) {
+          (_visitedPositions[state.fenNormalized] ?? -1) >= savedMoves.length) {
         nextPossibleMoves.removeAt(i);
         i--;
         state.undo();
@@ -159,4 +158,10 @@ class RecursiveTrainingSessionManager extends _$RecursiveTrainingSessionManager
 
 abstract class MyTrainingNotifyer {
   Future<GuessResult?> onMove(squares.Move move, Duration animationDuration);
+}
+
+extension FenNormalized on bishop.Game {
+  String get fenNormalized {
+    return fen.split(' ').take(4).join(' ');
+  }
 }
