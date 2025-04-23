@@ -26,14 +26,17 @@ class RandomTrainingSessionManager extends _$RandomTrainingSessionManager
 
   @override
   //returns the success of the move
-  Future<bool> onMove(squares.Move move, Duration animationDuration) async {
+  Future<GuessResult?> onMove(
+    squares.Move move,
+    Duration animationDuration,
+  ) async {
     if (_positions.isEmpty) {
-      return false;
+      return null;
     }
     final fenBefore = state.fen;
     bool moveResult = state.makeSquaresMove(move);
     if (!moveResult) {
-      return false;
+      return null;
     }
     final guessResult = ref.read(
       guessProvider(
@@ -49,12 +52,11 @@ class RandomTrainingSessionManager extends _$RandomTrainingSessionManager
     if (correct) {
       _positions.removeAt(0);
       _loadNextPosition();
-      return true;
     } else {
       await Future.delayed(Duration(milliseconds: 150));
       state.undo();
-      return false;
     }
+    return guessResult;
   }
 
   void _loadNextPosition() {
@@ -71,50 +73,71 @@ class RandomTrainingSessionManager extends _$RandomTrainingSessionManager
 @riverpod
 class RecursiveTrainingSessionManager extends _$RecursiveTrainingSessionManager
     implements MyTrainingNotifyer {
-  final List<String> _visitedPositions = [];
+  final Map<String, int> _visitedPositions = {};
   @override
-  bishop.Game build(bool forWhite, int numberOfPositions) {
+  bishop.Game build(bool forWhite) {
     return bishop.Game();
   }
 
   @override
   //returns the success of the move
-  Future<bool> onMove(squares.Move move, Duration animationDuration) async {
+  Future<GuessResult?> onMove(
+    squares.Move move,
+    Duration animationDuration,
+  ) async {
     final fenBefore = state.fen;
     bool moveResult = state.makeSquaresMove(move);
     if (!moveResult) {
-      return false;
+      return null;
     }
-    final guessResult = ref.read(
+
+    GuessResult guessResult = ref.read(
       guessProvider(
         fen: fenBefore,
         algebraic: state.history.last.meta!.algebraic!,
       ),
     );
-
-    final bool correct = guessResult != GuessResult.incorrect;
-
     await Future.delayed(animationDuration);
+    switch (guessResult) {
+      case GuessResult.incorrect:
+      case GuessResult.guessedOtherMove:
+        await Future.delayed(Duration(milliseconds: 150));
+        state.undo();
+      case GuessResult.correct:
+        if ((_visitedPositions[state.fen] ?? -1) > 0) {
+          guessResult = GuessResult.guessedOtherMove;
+          state.undo();
 
-    if (correct) {
-      _visitedPositions.add(fenBefore);
-      _loadNextPosition();
-      return true;
-    } else {
-      await Future.delayed(Duration(milliseconds: 150));
-      state.undo();
-      return false;
+          break;
+        }
+        _visitedPositions.update(
+          state.fen,
+          (val) => val + 1,
+          ifAbsent: () => 1,
+        );
+        _visitedPositions.update(
+          fenBefore,
+          (val) => val + 1,
+          ifAbsent: () => 1,
+        );
+
+        _loadNextPosition();
     }
+    return guessResult;
   }
 
   void _loadNextPosition() {
+    assert(
+      (state.state.turn == bishop.Bishop.white) != forWhite,
+      "_loadNextPosition should start from enemy perspective",
+    );
     final nextPossibleMoves = state.generateLegalMoves();
     for (var i = 0; i < nextPossibleMoves.length; i++) {
       final move = nextPossibleMoves[i];
       state.makeMove(move);
-      final moveInRepo =
-          ref.read(savedMovesProvider(fen: state.fen)).isNotEmpty;
-      if (!moveInRepo || _visitedPositions.contains(state.fen)) {
+      final savedMoves = ref.read(savedMovesProvider(fen: state.fen));
+      if (savedMoves.isEmpty ||
+          (_visitedPositions[state.fen] ?? -1) >= savedMoves.length) {
         nextPossibleMoves.removeAt(i);
         i--;
         state.undo();
@@ -135,5 +158,5 @@ class RecursiveTrainingSessionManager extends _$RecursiveTrainingSessionManager
 }
 
 abstract class MyTrainingNotifyer {
-  Future<bool> onMove(squares.Move move, Duration animationDuration);
+  Future<GuessResult?> onMove(squares.Move move, Duration animationDuration);
 }

@@ -82,9 +82,6 @@ class OpeningRepository {
 
       final move = game.undo();
       moves.addFirst(move!);
-      if (_positionsBox.containsKey(normalizeFen(game.fen))) {
-        break;
-      }
 
       if ((game.turn == bishop.Bishop.white) != forWhite) {
         continue;
@@ -103,6 +100,10 @@ class OpeningRepository {
           position.save();
         }),
       );
+
+      if (_positionsBox.containsKey(normalizeFen(game.fen))) {
+        break;
+      }
     }
     for (var move in moves) {
       game.makeMove(move);

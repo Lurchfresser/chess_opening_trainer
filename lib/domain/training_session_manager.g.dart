@@ -7,7 +7,7 @@ part of 'training_session_manager.dart';
 // **************************************************************************
 
 String _$randomTrainingSessionManagerHash() =>
-    r'7a71cf7e7f5947908ef4575084e119a3c3016f9e';
+    r'49d2c3c0d8b326f2e1f256a560a6c81e195dcc18';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -203,16 +203,14 @@ class _RandomTrainingSessionManagerProviderElement
 }
 
 String _$recursiveTrainingSessionManagerHash() =>
-    r'454351108c5c9b1077b1c7d4893464231015795f';
+    r'3d448e529b68f0e106b31adf555e2cd839ab34f2';
 
 abstract class _$RecursiveTrainingSessionManager
     extends BuildlessAutoDisposeNotifier<bishop.Game> {
   late final bool forWhite;
-  late final int numberOfPositions;
 
   bishop.Game build(
     bool forWhite,
-    int numberOfPositions,
   );
 }
 
@@ -229,11 +227,9 @@ class RecursiveTrainingSessionManagerFamily extends Family<bishop.Game> {
   /// See also [RecursiveTrainingSessionManager].
   RecursiveTrainingSessionManagerProvider call(
     bool forWhite,
-    int numberOfPositions,
   ) {
     return RecursiveTrainingSessionManagerProvider(
       forWhite,
-      numberOfPositions,
     );
   }
 
@@ -243,7 +239,6 @@ class RecursiveTrainingSessionManagerFamily extends Family<bishop.Game> {
   ) {
     return call(
       provider.forWhite,
-      provider.numberOfPositions,
     );
   }
 
@@ -269,11 +264,8 @@ class RecursiveTrainingSessionManagerProvider
   /// See also [RecursiveTrainingSessionManager].
   RecursiveTrainingSessionManagerProvider(
     bool forWhite,
-    int numberOfPositions,
   ) : this._internal(
-          () => RecursiveTrainingSessionManager()
-            ..forWhite = forWhite
-            ..numberOfPositions = numberOfPositions,
+          () => RecursiveTrainingSessionManager()..forWhite = forWhite,
           from: recursiveTrainingSessionManagerProvider,
           name: r'recursiveTrainingSessionManagerProvider',
           debugGetCreateSourceHash:
@@ -284,7 +276,6 @@ class RecursiveTrainingSessionManagerProvider
           allTransitiveDependencies:
               RecursiveTrainingSessionManagerFamily._allTransitiveDependencies,
           forWhite: forWhite,
-          numberOfPositions: numberOfPositions,
         );
 
   RecursiveTrainingSessionManagerProvider._internal(
@@ -295,11 +286,9 @@ class RecursiveTrainingSessionManagerProvider
     required super.debugGetCreateSourceHash,
     required super.from,
     required this.forWhite,
-    required this.numberOfPositions,
   }) : super.internal();
 
   final bool forWhite;
-  final int numberOfPositions;
 
   @override
   bishop.Game runNotifierBuild(
@@ -307,7 +296,6 @@ class RecursiveTrainingSessionManagerProvider
   ) {
     return notifier.build(
       forWhite,
-      numberOfPositions,
     );
   }
 
@@ -316,16 +304,13 @@ class RecursiveTrainingSessionManagerProvider
     return ProviderOverride(
       origin: this,
       override: RecursiveTrainingSessionManagerProvider._internal(
-        () => create()
-          ..forWhite = forWhite
-          ..numberOfPositions = numberOfPositions,
+        () => create()..forWhite = forWhite,
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
         forWhite: forWhite,
-        numberOfPositions: numberOfPositions,
       ),
     );
   }
@@ -339,15 +324,13 @@ class RecursiveTrainingSessionManagerProvider
   @override
   bool operator ==(Object other) {
     return other is RecursiveTrainingSessionManagerProvider &&
-        other.forWhite == forWhite &&
-        other.numberOfPositions == numberOfPositions;
+        other.forWhite == forWhite;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
     hash = _SystemHash.combine(hash, forWhite.hashCode);
-    hash = _SystemHash.combine(hash, numberOfPositions.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -359,9 +342,6 @@ mixin RecursiveTrainingSessionManagerRef
     on AutoDisposeNotifierProviderRef<bishop.Game> {
   /// The parameter `forWhite` of this provider.
   bool get forWhite;
-
-  /// The parameter `numberOfPositions` of this provider.
-  int get numberOfPositions;
 }
 
 class _RecursiveTrainingSessionManagerProviderElement
@@ -372,9 +352,6 @@ class _RecursiveTrainingSessionManagerProviderElement
   @override
   bool get forWhite =>
       (origin as RecursiveTrainingSessionManagerProvider).forWhite;
-  @override
-  int get numberOfPositions =>
-      (origin as RecursiveTrainingSessionManagerProvider).numberOfPositions;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

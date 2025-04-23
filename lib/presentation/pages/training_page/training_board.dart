@@ -1,6 +1,7 @@
 import 'package:bishop/bishop.dart';
 import 'package:chess_opening_trainer/domain/building_notifier.dart';
 import 'package:chess_opening_trainer/domain/training_session_manager.dart';
+import 'package:chess_opening_trainer/infrastructure/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:square_bishop/square_bishop.dart';
@@ -137,10 +138,7 @@ class _TrainingBoardConsumerState extends ConsumerState<TrainingBoard> {
   Widget build(BuildContext context) {
     final provider =
         widget.recursive
-            ? recursiveTrainingSessionManagerProvider(
-              widget.forWhite,
-              widget.numberOfPositions,
-            )
+            ? recursiveTrainingSessionManagerProvider(widget.forWhite)
             : randomTrainingSessionManagerProvider(
               widget.forWhite,
               widget.numberOfPositions,
@@ -198,11 +196,10 @@ class _TrainingBoardConsumerState extends ConsumerState<TrainingBoard> {
                     onMove:
                     // ignore: unnecessary_async
                     (move) async {
-                      bool correct = await (ref.read(
+                      final result = await (ref.read(
                                 widget.recursive
                                     ? recursiveTrainingSessionManagerProvider(
                                       widget.forWhite,
-                                      widget.numberOfPositions,
                                     ).notifier
                                     : randomTrainingSessionManagerProvider(
                                       widget.forWhite,
@@ -212,7 +209,9 @@ class _TrainingBoardConsumerState extends ConsumerState<TrainingBoard> {
                               as MyTrainingNotifyer)
                           .onMove(move, animationDuration);
                       if (!mounted) return;
-                      if (correct) {
+                      // ignore: use_build_context_synchronously
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      if (result == GuessResult.correct) {
                         // ignore: use_build_context_synchronously
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -220,12 +219,19 @@ class _TrainingBoardConsumerState extends ConsumerState<TrainingBoard> {
                             content: Text("Correct!"),
                           ),
                         );
-                      } else {
+                      } else if (result == GuessResult.incorrect) {
                         // ignore: use_build_context_synchronously
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             backgroundColor: Colors.red,
                             content: Text("Incorrect!"),
+                          ),
+                        );
+                      } else if (result == GuessResult.guessedOtherMove) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            backgroundColor: Colors.yellow,
+                            content: Text("Guessed other move"),
                           ),
                         );
                       }
