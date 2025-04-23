@@ -1,5 +1,6 @@
 import 'package:bishop/bishop.dart' as bishop;
 import 'package:chess_opening_trainer/domain/building_notifier.dart';
+import 'package:chess_opening_trainer/presentation/pages/building_page/widgets/possible_moves_widget.dart';
 import 'package:chess_opening_trainer/presentation/widgets/history_widet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -139,20 +140,30 @@ class _BuildingBoardConsumerState extends ConsumerState<BuildingBoard> {
             ),
             HistoryWidget(history: game.history),
             if (possibleMoves.isNotEmpty)
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.red, width: 2),
-                ),
-                child: Row(
-                  children: [
-                    for (var move in possibleMoves)
-                      Text(
-                        "${move.formatted}  ",
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                  ],
-                ),
+              PossibleMovesWidget(
+                possibleMoves: possibleMoves,
+                onTap: (move) {
+                  setState(() {
+                    final legalMoves = game.generateLegalMoves();
+                    for (var legalMove in legalMoves) {
+                      if (move.algebraic ==
+                          game.squaresMove(legalMove).algebraic()) {
+                        game.makeMove(legalMove);
+                        player =
+                            player == squares.Squares.white
+                                ? squares.Squares.black
+                                : squares.Squares.white;
+                        state = game.squaresState(player);
+                        setState(() {});
+                        return;
+                      }
+                    }
+                    assert(
+                      false,
+                      "Move ${move.algebraic} not found in legal moves",
+                    );
+                  });
+                },
               ),
           ],
         ),
