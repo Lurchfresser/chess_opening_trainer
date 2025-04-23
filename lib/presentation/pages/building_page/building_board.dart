@@ -37,6 +37,7 @@ class _BuildingBoardConsumerState extends ConsumerState<BuildingBoard> {
   void _flipBoard() => setState(() => forWhite = !forWhite);
 
   void _onMove(squares.Move move) {
+    //TODO: Ask for safe if transposition is hit
     bool result = game.makeSquaresMove(move);
     if (result) {
       setState(() {

@@ -8,8 +8,9 @@ class TrainingSessionDialog extends StatefulWidget {
 }
 
 class _TrainingSessionDialogState extends State<TrainingSessionDialog> {
-  final TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController(text: '10');
   bool forWhite = true;
+  bool recursive = true;
 
   @override
   void dispose() {
@@ -42,6 +43,13 @@ class _TrainingSessionDialogState extends State<TrainingSessionDialog> {
                   forWhite = !forWhite;
                 }),
           ),
+          Switch(
+            value: recursive,
+            onChanged:
+                (_) => setState(() {
+                  recursive = !recursive;
+                }),
+          ),
         ],
       ),
       actions: <Widget>[
@@ -61,11 +69,29 @@ class _TrainingSessionDialogState extends State<TrainingSessionDialog> {
               return;
             }
             // Start a new training session
-            Navigator.of(context).pop((numberOfPositions, forWhite));
+            Navigator.of(context).pop(
+              TrainingSessionConfig(
+                numberOfPositions: numberOfPositions,
+                forWhite: forWhite,
+                recursive: recursive,
+              ),
+            );
           },
           child: const Text('Start'),
         ),
       ],
     );
   }
+}
+
+class TrainingSessionConfig {
+  final int numberOfPositions;
+  final bool forWhite;
+  final bool recursive;
+
+  TrainingSessionConfig({
+    required this.numberOfPositions,
+    required this.forWhite,
+    required this.recursive,
+  });
 }

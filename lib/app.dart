@@ -50,15 +50,17 @@ class _AppConsumerState extends ConsumerState<App> {
                     title: const Text('Train Openings'),
                     onTap: () async {
                       Navigator.pop(context);
-                      final numberOfPositions = await showDialog<(int, bool)?>(
-                        context: context,
-                        builder: (context) => const TrainingSessionDialog(),
-                      );
-                      if (numberOfPositions == null) return;
+                      final trainingConfig =
+                          await showDialog<TrainingSessionConfig?>(
+                            context: context,
+                            builder: (context) => const TrainingSessionDialog(),
+                          );
+                      if (trainingConfig == null) return;
                       setState(() {
                         currentPage = TrainingBoard(
-                          numberOfPositions: numberOfPositions.$1,
-                          forWhite: numberOfPositions.$2,
+                          numberOfPositions: trainingConfig.numberOfPositions,
+                          forWhite: trainingConfig.forWhite,
+                          recursive: trainingConfig.recursive,
                         );
                       });
                       // Add navigation to training screen
